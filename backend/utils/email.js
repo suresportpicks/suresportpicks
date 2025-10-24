@@ -2,29 +2,49 @@ const nodemailer = require('nodemailer');
 
 // Create transporter
 const createTransporter = () => {
-  const port = parseInt(process.env.EMAIL_PORT) || 587;
-  const isSecure = port === 465; // Use SSL for port 465
+  // Use Brevo (formerly Sendinblue) for production, fallback for development
+  const isProduction = process.env.NODE_ENV === 'production';
   
-  return nodemailer.createTransport({
-    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-    port: port,
-    secure: isSecure, // true for 465 (SSL), false for other ports (STARTTLS)
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS
-    },
-    tls: {
-      rejectUnauthorized: false,
-      // Additional TLS options for better compatibility
-      ciphers: 'SSLv3'
-    },
-    // Connection timeout and socket timeout
-    connectionTimeout: 60000,
-    socketTimeout: 60000,
-    // Enable debug logging in development
-    debug: process.env.NODE_ENV === 'development',
-    logger: process.env.NODE_ENV === 'development'
-  });
+  if (isProduction && process.env.BREVO_SMTP_KEY) {
+    // Brevo SMTP configuration
+    return nodemailer.createTransporter({
+      host: 'smtp-relay.brevo.com',
+      port: 587,
+      secure: false, // STARTTLS
+      auth: {
+        user: process.env.BREVO_SMTP_USER || process.env.EMAIL_USER,
+        pass: process.env.BREVO_SMTP_KEY
+      },
+      tls: {
+        rejectUnauthorized: false
+      }
+    });
+  } else {
+    // Fallback configuration for development or custom SMTP
+    const port = parseInt(process.env.EMAIL_PORT) || 587;
+    const isSecure = port === 465; // Use SSL for port 465
+    
+    return nodemailer.createTransporter({
+      host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+      port: port,
+      secure: isSecure, // true for 465 (SSL), false for other ports (STARTTLS)
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      },
+      tls: {
+        rejectUnauthorized: false,
+        // Additional TLS options for better compatibility
+        ciphers: 'SSLv3'
+      },
+      // Connection timeout and socket timeout
+      connectionTimeout: 60000,
+      socketTimeout: 60000,
+      // Enable debug logging in development
+      debug: process.env.NODE_ENV === 'development',
+      logger: process.env.NODE_ENV === 'development'
+    });
+  }
 };
 
 // Email templates
