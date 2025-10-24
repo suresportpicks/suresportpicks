@@ -1,0 +1,31 @@
+<svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="mlsGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#059669;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#10b981;stop-opacity:1" />
+    </linearGradient>
+    <filter id="mlsGlow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Shield Background -->
+  <path d="M60 5 L95 20 L95 45 C95 60 80 70 60 70 C40 70 25 60 25 45 L25 20 Z" 
+        fill="url(#mlsGradient)" 
+        stroke="#f59e0b" 
+        stroke-width="2" 
+        filter="url(#mlsGlow)"/>
+  
+  <!-- Soccer Ball -->
+  <circle cx="60" cy="45" r="12" fill="white" stroke="#000" stroke-width="1"/>
+  <polygon points="60,35 65,40 62,47 58,47 55,40" fill="#000"/>
+  <polygon points="65,40 70,42 68,49 62,47" fill="#000"/>
+  <polygon points="55,40 50,42 52,49 58,47" fill="#000"/>
+  
+  <!-- MLS Text -->
+  <text x="60" y="25" text-anchor="middle" fill="white" font-family="Arial Black, sans-serif" font-size="12" font-weight="bold">MLS</text>
+</svg>

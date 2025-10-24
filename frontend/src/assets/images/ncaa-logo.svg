@@ -1,0 +1,33 @@
+<svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="ncaaGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7c3aed;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#a855f7;stop-opacity:1" />
+    </linearGradient>
+    <filter id="ncaaGlow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect x="5" y="15" width="110" height="50" rx="10" fill="url(#ncaaGradient)" stroke="#f59e0b" stroke-width="2" filter="url(#ncaaGlow)"/>
+  
+  <!-- NCAA Text -->
+  <text x="60" y="35" text-anchor="middle" fill="white" font-family="Arial Black, sans-serif" font-size="14" font-weight="bold">NCAA</text>
+  
+  <!-- Basketball -->
+  <circle cx="30" cy="50" r="8" fill="#ff8c00" stroke="#8b4513" stroke-width="1"/>
+  <path d="M25 50 L35 50" stroke="#8b4513" stroke-width="1"/>
+  <path d="M30 42 L30 58" stroke="#8b4513" stroke-width="1"/>
+  
+  <!-- Football -->
+  <ellipse cx="90" cy="50" rx="8" ry="5" fill="#8b4513" stroke="white" stroke-width="1"/>
+  <line x1="86" y1="50" x2="94" y2="50" stroke="white" stroke-width="1"/>
+  
+  <!-- Stars -->
+  <polygon points="60,45 61,47 63,47 61.5,48.5 62,50.5 60,49.5 58,50.5 58.5,48.5 57,47 59,47" fill="#f59e0b"/>
+</svg>

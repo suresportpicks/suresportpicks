@@ -1,0 +1,44 @@
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg-gradient-sarah" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7c3aed;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#a855f7;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background Circle -->
+  <circle cx="40" cy="40" r="40" fill="url(#bg-gradient-sarah)"/>
+  
+  <!-- Face -->
+  <circle cx="40" cy="32" r="12" fill="#fbbf24"/>
+  
+  <!-- Hair (longer, professional style) -->
+  <path d="M28 22 C28 15, 32 12, 40 12 C48 12, 52 15, 52 22 C52 25, 50 28, 48 30 C46 25, 44 22, 40 22 C36 22, 34 25, 32 30 C30 28, 28 25, 28 22 Z" fill="#92400e"/>
+  <path d="M28 22 C26 28, 26 35, 28 40 C30 38, 32 35, 32 30" fill="#92400e"/>
+  <path d="M52 22 C54 28, 54 35, 52 40 C50 38, 48 35, 48 30" fill="#92400e"/>
+  
+  <!-- Eyes -->
+  <circle cx="36" cy="30" r="1.5" fill="#1f2937"/>
+  <circle cx="44" cy="30" r="1.5" fill="#1f2937"/>
+  
+  <!-- Eyelashes -->
+  <path d="M34 28 L35 27" stroke="#1f2937" stroke-width="0.5"/>
+  <path d="M37 28 L38 27" stroke="#1f2937" stroke-width="0.5"/>
+  <path d="M42 28 L43 27" stroke="#1f2937" stroke-width="0.5"/>
+  <path d="M45 28 L46 27" stroke="#1f2937" stroke-width="0.5"/>
+  
+  <!-- Nose -->
+  <ellipse cx="40" cy="34" rx="1" ry="2" fill="#f59e0b"/>
+  
+  <!-- Mouth (slight smile) -->
+  <path d="M37 37 Q40 39 43 37" stroke="#dc2626" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  
+  <!-- Body/Professional Blazer -->
+  <path d="M25 55 C25 50, 30 45, 40 45 C50 45, 55 50, 55 55 L55 80 L25 80 Z" fill="#1f2937"/>
+  
+  <!-- Blazer Lapels -->
+  <path d="M32 45 L38 52 L40 50 L42 52 L48 45" stroke="#374151" stroke-width="2" fill="none"/>
+  
+  <!-- Necklace -->
+  <circle cx="40" cy="48" r="2" fill="#fbbf24" stroke="#f59e0b" stroke-width="1"/>
+</svg>

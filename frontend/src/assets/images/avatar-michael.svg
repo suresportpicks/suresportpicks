@@ -1,0 +1,33 @@
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e3a8a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background Circle -->
+  <circle cx="40" cy="40" r="40" fill="url(#bg-gradient)"/>
+  
+  <!-- Face -->
+  <circle cx="40" cy="32" r="12" fill="#fbbf24"/>
+  
+  <!-- Hair -->
+  <path d="M28 25 C28 18, 35 15, 40 15 C45 15, 52 18, 52 25 C52 20, 48 18, 40 18 C32 18, 28 20, 28 25 Z" fill="#374151"/>
+  
+  <!-- Eyes -->
+  <circle cx="36" cy="30" r="1.5" fill="#1f2937"/>
+  <circle cx="44" cy="30" r="1.5" fill="#1f2937"/>
+  
+  <!-- Nose -->
+  <ellipse cx="40" cy="34" rx="1" ry="2" fill="#f59e0b"/>
+  
+  <!-- Mouth -->
+  <path d="M37 37 Q40 39 43 37" stroke="#1f2937" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  
+  <!-- Body/Shirt -->
+  <path d="M25 55 C25 50, 30 45, 40 45 C50 45, 55 50, 55 55 L55 80 L25 80 Z" fill="#059669"/>
+  
+  <!-- Collar -->
+  <path d="M35 45 L40 50 L45 45" stroke="#047857" stroke-width="2" fill="none"/>
+</svg>

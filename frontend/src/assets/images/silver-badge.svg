@@ -1,0 +1,39 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="silverGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#E5E7EB"/>
+      <stop offset="50%" stopColor="#9CA3AF"/>
+      <stop offset="100%" stopColor="#6B7280"/>
+    </linearGradient>
+    <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#3B82F6"/>
+      <stop offset="100%" stopColor="#1D4ED8"/>
+    </linearGradient>
+    <filter id="silverGlow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Outer Ring -->
+  <circle cx="50" cy="50" r="45" fill="url(#silverGradient)" filter="url(#silverGlow)"/>
+  
+  <!-- Inner Circle -->
+  <circle cx="50" cy="50" r="35" fill="url(#blueGradient)"/>
+  
+  <!-- Lightning Bolt -->
+  <path d="M 45 30 L 40 45 L 50 45 L 45 65 L 60 45 L 50 45 Z" fill="#FFFFFF"/>
+  
+  <!-- Decorative Elements -->
+  <circle cx="50" cy="20" r="3" fill="url(#silverGradient)"/>
+  <circle cx="50" cy="80" r="3" fill="url(#silverGradient)"/>
+  <circle cx="20" cy="50" r="3" fill="url(#silverGradient)"/>
+  <circle cx="80" cy="50" r="3" fill="url(#silverGradient)"/>
+  
+  <!-- Inner Highlights -->
+  <path d="M 35 35 Q 50 30 65 35" stroke="#FFFFFF" strokeWidth="2" fill="none" opacity="0.6"/>
+  <circle cx="50" cy="50" r="25" fill="none" stroke="#FFFFFF" strokeWidth="1" opacity="0.3"/>
+</svg>
