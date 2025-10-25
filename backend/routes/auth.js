@@ -5,7 +5,7 @@ const User = require('../models/User');
 const Referral = require('../models/Referral');
 const { generateToken, authenticateToken } = require('../middleware/auth');
 const { sendEmail } = require('../utils/email');
-const tempStorage = require('../utils/tempStorage');
+const PendingRegistration = require('../models/PendingRegistration');
 
 const router = express.Router();
 
@@ -50,22 +50,14 @@ router.post('/register', validateRegistration, async (req, res) => {
     }
 
     const { name, email, password, referralCode } = req.body;
+    const normalizedEmail = email.toLowerCase();
 
     // Check if user already exists in database
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       return res.status(400).json({
         message: 'User already exists with this email',
         error: 'USER_EXISTS'
-      });
-    }
-
-    // Check if user is already in temporary storage (pending verification)
-    const existingTempUser = tempStorage.get(email);
-    if (existingTempUser) {
-      return res.status(400).json({
-        message: 'Registration already in progress. Please check your email for verification code or wait for it to expire.',
-        error: 'REGISTRATION_PENDING'
       });
     }
 
@@ -81,43 +73,54 @@ router.post('/register', validateRegistration, async (req, res) => {
       }
     }
 
-    // Generate OTP code
+    // Generate OTP code and expiry
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-    // Store user data temporarily (not in database yet)
-    const tempUserData = {
-      name,
-      email,
-      password,
-      referredBy: referrer ? referrer._id : null,
-      referralCode: referralCode || null
-    };
+    // Check if there's an existing pending registration
+    const existingPending = await PendingRegistration.findOne({ email: normalizedEmail });
 
-    tempStorage.store(email, tempUserData, otpCode, otpExpiry);
+    if (existingPending) {
+      existingPending.name = name;
+      existingPending.password = password;
+      existingPending.otpCode = otpCode;
+      existingPending.expiresAt = expiresAt;
+      existingPending.referredBy = referrer ? referrer._id : null;
+      existingPending.referralCode = referralCode || null;
+      await existingPending.save();
+    } else {
+      const pending = new PendingRegistration({
+        email: normalizedEmail,
+        name,
+        password,
+        otpCode,
+        expiresAt,
+        referredBy: referrer ? referrer._id : null,
+        referralCode: referralCode || null
+      });
+      await pending.save();
+    }
 
     // Send verification email
     try {
       await sendEmail({
-        to: email,
+        to: normalizedEmail,
         template: 'emailVerification',
         data: {
           name: name,
           otpCode: otpCode,
-          verifyUrl: `${process.env.FRONTEND_URL}/verify-email?email=${encodeURIComponent(email)}`
+          verifyUrl: `${process.env.FRONTEND_URL}/verify-email?email=${encodeURIComponent(normalizedEmail)}`
         }
       });
 
       res.status(201).json({
         message: 'Registration initiated! Please check your email for verification code.',
         requiresVerification: true,
-        email: email
+        email: normalizedEmail
       });
     } catch (emailError) {
       console.error('Verification email failed:', emailError);
-      // Remove from temp storage if email fails
-      tempStorage.remove(email);
-      
+      // If email fails, keep the pending entry but inform the user
       res.status(500).json({
         message: 'Registration failed. Could not send verification email.',
         error: 'EMAIL_SEND_ERROR'
@@ -145,8 +148,10 @@ router.post('/verify-email', async (req, res) => {
       });
     }
 
+    const normalizedEmail = email.toLowerCase();
+
     // Check if user is already verified in database
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       if (existingUser.isEmailVerified) {
         return res.status(400).json({
@@ -156,53 +161,52 @@ router.post('/verify-email', async (req, res) => {
       }
     }
 
-    // Verify OTP from temporary storage
-    const isValidOTP = tempStorage.verifyOTP(email.toLowerCase(), otpCode);
-    if (!isValidOTP) {
-      return res.status(400).json({
-        message: 'Invalid or expired verification code'
-      });
-    }
-
-    // Get user data from temporary storage
-    const tempUserData = tempStorage.get(email.toLowerCase());
-    if (!tempUserData) {
+    // Load pending registration
+    const pending = await PendingRegistration.findOne({ email: normalizedEmail });
+    if (!pending) {
       return res.status(400).json({
         message: 'Registration session expired. Please register again.'
       });
     }
 
+    // Validate OTP and expiry
+    if (pending.otpCode !== otpCode || pending.expiresAt <= new Date()) {
+      return res.status(400).json({
+        message: 'Invalid or expired verification code'
+      });
+    }
+
     // Create user in database
     const user = new User({
-      name: tempUserData.userData.name,
-      email: tempUserData.userData.email,
-      password: tempUserData.userData.password,
+      name: pending.name,
+      email: pending.email,
+      password: pending.password,
       isActive: true,
       isEmailVerified: true,
-      referredBy: tempUserData.userData.referredBy
+      referredBy: pending.referredBy
     });
 
     await user.save();
 
     // Create referral record if user was referred
-    if (tempUserData.userData.referredBy) {
+    if (pending.referredBy) {
       const referralRecord = new Referral({
-        referrer: tempUserData.userData.referredBy,
+        referrer: pending.referredBy,
         referredUser: user._id,
-        status: 'pending', // Will be activated when user makes first payment
+        status: 'pending',
         earnings: 0,
         earningsType: 'signup'
       });
       await referralRecord.save();
     }
 
-    // Remove from temporary storage
-    tempStorage.remove(email.toLowerCase());
+    // Remove pending registration
+    await PendingRegistration.deleteOne({ _id: pending._id });
 
     // Generate token for immediate login
     const token = generateToken(user._id);
 
-    // Send welcome email
+    // Send welcome email (non-blocking)
     try {
       await sendEmail({
         to: user.email,
@@ -214,7 +218,6 @@ router.post('/verify-email', async (req, res) => {
       });
     } catch (emailError) {
       console.error('Welcome email failed:', emailError);
-      // Don't fail verification if welcome email fails
     }
 
     res.json({

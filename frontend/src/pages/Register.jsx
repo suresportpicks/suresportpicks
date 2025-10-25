@@ -133,16 +133,18 @@ const Register = () => {
           </form>
 
           {/* Links */}
-          <div className="mt-6 text-center">
-            <p className="text-sm sm:text-base text-gray-600">
+          <div className="mt-6 text-center space-y-2">
+            <div className="text-sm theme-text-muted">
               Already have an account?{' '}
-              <button
-                onClick={() => navigate('/login')}
-                className="text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200"
-              >
+              <Link to="/login" className="text-blue-600 hover:text-blue-500 font-medium">
                 Sign in
-              </button>
-            </p>
+              </Link>
+            </div>
+            <div className="text-sm theme-text-muted">
+              <Link to="/forgot-password" className="text-blue-600 hover:text-blue-500 font-medium">
+                Forgot your password?
+              </Link>
+            </div>
           </div>
         </div>
       </div>

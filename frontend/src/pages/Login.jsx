@@ -113,13 +113,15 @@ const Login = () => {
           {/* Links */}
           <div className="mt-6 space-y-3 sm:space-y-4 text-center">
             <p className="text-sm sm:text-base text-gray-600">
+              <Link to="/forgot-password" className="text-blue-600 hover:text-blue-500 font-medium">
+                Forgot your password?
+              </Link>
+            </p>
+            <p className="text-sm sm:text-base text-gray-600">
               Don't have an account?{' '}
-              <button
-                onClick={() => navigate('/register')}
-                className="text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200"
-              >
+              <Link to="/register" className="text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200">
                 Sign up
-              </button>
+              </Link>
             </p>
             <p className="text-xs sm:text-sm text-gray-500">
               <button

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react'
 import { AuthContext } from '../context/AuthContext'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, Link } from 'react-router-dom'
 import { useTheme } from '../context/ThemeContext'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
@@ -527,6 +527,14 @@ const AccountSettings = () => {
                 <li>• Don't reuse passwords from other accounts</li>
                 <li>• Consider using a password manager</li>
               </ul>
+              <div className="mt-3 pt-3 border-t theme-border-primary">
+                <p className="text-xs sm:text-sm theme-text-muted">
+                  Forgot your current password?{' '}
+                  <Link to="/forgot-password" className="text-blue-600 hover:text-blue-500 font-medium">
+                    Reset it here
+                  </Link>
+                </p>
+              </div>
             </div>
           </div>
         )}
