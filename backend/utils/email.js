@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const axios = require('axios');
 
 // Create transporter
 const createTransporter = () => {
@@ -7,7 +8,7 @@ const createTransporter = () => {
   
   if (isProduction && process.env.BREVO_SMTP_KEY) {
     // Brevo SMTP configuration
-    return nodemailer.createTransporter({
+    return nodemailer.createTransport({
       host: 'smtp-relay.brevo.com',
       port: 587,
       secure: false, // STARTTLS
@@ -24,7 +25,7 @@ const createTransporter = () => {
     const port = parseInt(process.env.EMAIL_PORT) || 587;
     const isSecure = port === 465; // Use SSL for port 465
     
-    return nodemailer.createTransporter({
+    return nodemailer.createTransport({
       host: process.env.EMAIL_HOST || 'smtp.gmail.com',
       port: port,
       secure: isSecure, // true for 465 (SSL), false for other ports (STARTTLS)
@@ -311,8 +312,6 @@ const emailTemplates = {
 // Main send email function
 const sendEmail = async ({ to, subject, template, data, html, text }) => {
   try {
-    const transporter = createTransporter();
-
     let emailContent;
     
     if (template && emailTemplates[template]) {
@@ -320,6 +319,18 @@ const sendEmail = async ({ to, subject, template, data, html, text }) => {
     } else {
       emailContent = { subject, html, text };
     }
+
+    // Use MailerSend for OTP emails when configured
+    if (template === 'emailVerification' && process.env.MAILERSEND_API_KEY) {
+      return await sendWithMailerSend({
+        to,
+        subject: emailContent.subject,
+        html: emailContent.html,
+        text: emailContent.text
+      });
+    }
+
+    const transporter = createTransporter();
 
     const mailOptions = {
       from: `"SureSport Picks" <${process.env.EMAIL_FROM || process.env.EMAIL_USER}>`,
@@ -345,6 +356,44 @@ const sendEmail = async ({ to, subject, template, data, html, text }) => {
     console.error('❌ Email send error:', error);
     throw new Error(`Failed to send email: ${error.message}`);
   }
+};
+
+// Send via MailerSend (used for OTP emails)
+const sendWithMailerSend = async ({ to, subject, html, text }) => {
+  const apiKey = process.env.MAILERSEND_API_KEY;
+  const senderEmail = process.env.MAILERSEND_SENDER_EMAIL || process.env.EMAIL_FROM || process.env.EMAIL_USER;
+  const senderName = process.env.MAILERSEND_SENDER_NAME || 'SureSport Picks';
+
+  if (!apiKey || !senderEmail) {
+    throw new Error('MailerSend configuration missing (MAILERSEND_API_KEY or MAILERSEND_SENDER_EMAIL)');
+  }
+
+  const payload = {
+    from: { email: senderEmail, name: senderName },
+    to: [{ email: to }],
+    subject,
+    html,
+    text
+  };
+
+  const res = await axios.post('https://api.mailersend.com/v1/email', payload, {
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json'
+    },
+    timeout: 15000
+  });
+
+  console.log('✅ MailerSend email sent:', {
+    to,
+    subject,
+    messageId: res.data?.message_id || res.data?.id
+  });
+
+  return {
+    success: true,
+    messageId: res.data?.message_id || res.data?.id
+  };
 };
 
 // Send payment notification to admin
