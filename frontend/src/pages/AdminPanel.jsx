@@ -848,30 +848,30 @@ function AdminPanel() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto">
         <div className="bg-white shadow">
-          <div className="px-6 py-4 flex justify-between items-center">
+          <div className="px-3 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Admin Panel</h1>
-              <p className="text-gray-600">Complete system management and control</p>
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Admin Panel</h1>
+              <p className="text-sm sm:text-base text-gray-600">Complete system management and control</p>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <p className="text-sm font-medium text-gray-900">{user?.name || user?.email}</p>
+            <div className="flex items-center space-x-2 sm:space-x-4 w-full sm:w-auto justify-between sm:justify-end">
+              <div className="text-left sm:text-right">
+                <p className="text-xs sm:text-sm font-medium text-gray-900">{user?.name || user?.email}</p>
                 <p className="text-xs text-gray-500">Administrator</p>
               </div>
               <button
                 onClick={handleLogout}
-                className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
                 title="Logout"
               >
-                <LogOut className="w-4 h-4" />
-                <span>Logout</span>
+                <LogOut className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Logout</span>
               </button>
             </div>
           </div>
           
           {/* Navigation Tabs */}
           <div className="border-b border-gray-200">
-            <nav className="flex space-x-8 px-6">
+            <nav className="flex space-x-2 sm:space-x-4 lg:space-x-8 px-3 sm:px-6 overflow-x-auto scrollbar-hide">
               {[
                 { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
                 { id: 'users', label: 'Users', icon: Users },
@@ -884,14 +884,14 @@ function AdminPanel() {
                 <button
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
-                  className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm ${
+                  className={`flex items-center space-x-1 sm:space-x-2 py-3 sm:py-4 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap ${
                     activeTab === tab.id
                       ? 'border-blue-500 text-blue-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
-                  <tab.icon className="w-5 h-5" />
-                  <span>{tab.label}</span>
+                  <tab.icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="hidden sm:inline lg:inline">{tab.label}</span>
                 </button>
               ))}
             </nav>
@@ -904,57 +904,57 @@ function AdminPanel() {
           </div>
         )}
 
-        <div className="p-6">{renderTabContent()}</div>
+        <div className="p-3 sm:p-6">{renderTabContent()}</div>
       </div>
 
       {/* User Details Modal */}
       {showUserModal && selectedUser && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold">User Details</h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-white rounded-lg p-3 sm:p-6 max-w-2xl w-full max-h-[95vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-3 sm:mb-4">
+              <h3 className="text-lg sm:text-xl font-bold">User Details</h3>
               <button onClick={() => setShowUserModal(false)} className="text-gray-500 hover:text-gray-700">
-                <XCircle className="w-6 h-6" />
+                <XCircle className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
             </div>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-3 sm:space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Name</label>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700">Name</label>
                   <p className="mt-1 text-sm text-gray-900">{selectedUser.user?.firstName} {selectedUser.user?.lastName}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Email</label>
-                  <p className="mt-1 text-sm text-gray-900">{selectedUser.user?.email}</p>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700">Email</label>
+                  <p className="mt-1 text-sm text-gray-900 break-all">{selectedUser.user?.email}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Plan</label>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700">Plan</label>
                   <p className="mt-1 text-sm text-gray-900 capitalize">{selectedUser.user?.plan}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Status</label>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700">Status</label>
                   <p className="mt-1 text-sm text-gray-900">{selectedUser.user?.isActive ? 'Active' : 'Inactive'}</p>
                 </div>
               </div>
               
               {/* Betting Statistics Controls */}
-              <div className="border-t pt-4">
-                <h4 className="font-medium text-gray-900 mb-3">Betting Statistics</h4>
-                <div className="grid grid-cols-3 gap-4 mb-4">
+              <div className="border-t pt-3 sm:pt-4">
+                <h4 className="font-medium text-gray-900 mb-2 sm:mb-3 text-sm sm:text-base">Betting Statistics</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-3 sm:mb-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Won Bets</label>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700">Won Bets</label>
                     <p className="mt-1 text-sm text-gray-900">{selectedUser.user?.stats?.wonBets || 0}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Lost Bets</label>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700">Lost Bets</label>
                     <p className="mt-1 text-sm text-gray-900">{selectedUser.user?.stats?.lostBets || 0}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Refunded Bets</label>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700">Refunded Bets</label>
                     <p className="mt-1 text-sm text-gray-900">{selectedUser.user?.stats?.refundedBets || 0}</p>
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <input
                     type="number"
                     placeholder="Won Bets"
@@ -976,16 +976,16 @@ function AdminPanel() {
                 </div>
                 <button
                   onClick={() => updateBettingStats(selectedUser.user._id)}
-                  className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+                  className="mt-2 w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
                 >
                   Update Betting Stats
                 </button>
               </div>
               
               {/* Balance Management */}
-              <div className="border-t pt-4">
-                <h4 className="font-medium text-gray-900 mb-3">Balance Management</h4>
-                <div className="flex gap-2">
+              <div className="border-t pt-3 sm:pt-4">
+                <h4 className="font-medium text-gray-900 mb-2 sm:mb-3 text-sm sm:text-base">Balance Management</h4>
+                <div className="flex flex-col sm:flex-row gap-2">
                   <input
                     type="number"
                     placeholder="Amount to add"
@@ -996,7 +996,7 @@ function AdminPanel() {
                   />
                   <button
                     onClick={() => addUserBalance(selectedUser.user._id)}
-                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
+                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm whitespace-nowrap"
                   >
                     Add Balance
                   </button>
@@ -1011,11 +1011,11 @@ function AdminPanel() {
               
               {selectedUser.transactions?.length > 0 && (
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Recent Transactions</h4>
+                  <h4 className="font-medium text-gray-900 mb-2 text-sm sm:text-base">Recent Transactions</h4>
                   <div className="space-y-2">
                     {selectedUser.transactions.slice(0, 5).map((transaction) => (
                       <div key={transaction._id} className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                        <span className="text-sm">${transaction.amount}</span>
+                        <span className="text-sm font-medium">${transaction.amount}</span>
                         <span className={`text-xs px-2 py-1 rounded ${
                           transaction.status === 'completed' ? 'bg-green-100 text-green-800' :
                           transaction.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
@@ -1035,77 +1035,77 @@ function AdminPanel() {
 
       {/* Deposit Modal */}
       {showDepositModal && selectedDeposit && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] flex flex-col">
-            <div className="px-6 py-4 border-b border-gray-200 flex-shrink-0">
-              <h3 className="text-lg font-semibold">Manage Deposit Request</h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-white rounded-lg w-full max-w-md max-h-[95vh] flex flex-col">
+            <div className="px-3 sm:px-6 py-3 sm:py-4 border-b border-gray-200 flex-shrink-0">
+              <h3 className="text-base sm:text-lg font-semibold">Manage Deposit Request</h3>
             </div>
             
-            <div className="flex-1 overflow-y-auto px-6 py-4">
-              <div className="space-y-4">
+            <div className="flex-1 overflow-y-auto px-3 sm:px-6 py-3 sm:py-4">
+              <div className="space-y-3 sm:space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">User</label>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">User</label>
                 <p className="text-sm text-gray-900">{selectedDeposit.user?.username || 'Unknown'}</p>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Amount</label>
                 <p className="text-sm text-gray-900">${selectedDeposit.amount}</p>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Payment Method</label>
                 <p className="text-sm text-gray-900">{selectedDeposit.paymentMethod}</p>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Status</label>
                 <p className="text-sm text-gray-900">{selectedDeposit.status}</p>
               </div>
 
               {selectedDeposit.status === 'pending' && (
                 <div className="space-y-3">
-                  <h4 className="font-medium text-gray-900">Add Payment Instructions</h4>
+                  <h4 className="font-medium text-gray-900 text-sm sm:text-base">Add Payment Instructions</h4>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Instructions</label>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Instructions</label>
                     <textarea
                       value={paymentDetails.instructions}
                       onChange={(e) => setPaymentDetails(prev => ({ ...prev, instructions: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                       rows="3"
                       placeholder="Enter payment instructions for the user..."
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Account Information</label>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Account Information</label>
                     <input
                       type="text"
                       value={paymentDetails.accountInfo}
                       onChange={(e) => setPaymentDetails(prev => ({ ...prev, accountInfo: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                       placeholder="Account number, wallet address, etc."
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Reference</label>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Reference</label>
                     <input
                       type="text"
                       value={paymentDetails.reference}
                       onChange={(e) => setPaymentDetails(prev => ({ ...prev, reference: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                       placeholder="Reference number or code"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Notes</label>
                     <textarea
                       value={paymentDetails.notes}
                       onChange={(e) => setPaymentDetails(prev => ({ ...prev, notes: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                       rows="2"
                       placeholder="Additional notes..."
                     />
@@ -1115,11 +1115,11 @@ function AdminPanel() {
               </div>
             </div>
 
-            <div className="px-6 py-4 border-t border-gray-200 flex-shrink-0">
-              <div className="flex justify-end space-x-3">
+            <div className="px-3 sm:px-6 py-3 sm:py-4 border-t border-gray-200 flex-shrink-0">
+              <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
               <button
                 onClick={() => setShowDepositModal(false)}
-                className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
+                className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 text-sm"
               >
                 Cancel
               </button>
@@ -1128,7 +1128,7 @@ function AdminPanel() {
                 <button
                   onClick={() => addPaymentDetails(selectedDeposit._id)}
                   disabled={saving}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 text-sm"
                 >
                   {saving ? 'Adding...' : 'Add Payment Details'}
                 </button>
@@ -1138,7 +1138,7 @@ function AdminPanel() {
                 <button
                   onClick={() => approveDeposit(selectedDeposit._id)}
                   disabled={saving}
-                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 text-sm"
                 >
                   {saving ? 'Approving...' : 'Approve Deposit'}
                 </button>
@@ -1147,7 +1147,7 @@ function AdminPanel() {
               <button
                 onClick={() => rejectDeposit(selectedDeposit._id)}
                 disabled={saving}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 text-sm"
               >
                 {saving ? 'Rejecting...' : 'Reject'}
               </button>
@@ -1159,34 +1159,34 @@ function AdminPanel() {
 
       {/* Payment Option Modal */}
       {showPaymentOptionModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] flex flex-col">
-            <div className="px-6 py-4 border-b border-gray-200 flex-shrink-0">
-              <h3 className="text-lg font-semibold">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-white rounded-lg w-full max-w-2xl max-h-[95vh] flex flex-col">
+            <div className="px-3 sm:px-6 py-3 sm:py-4 border-b border-gray-200 flex-shrink-0">
+              <h3 className="text-base sm:text-lg font-semibold">
                 {selectedPaymentOption ? 'Edit Payment Option' : 'Add Payment Option'}
               </h3>
             </div>
             
-            <div className="flex-1 overflow-y-auto px-6 py-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex-1 overflow-y-auto px-3 sm:px-6 py-3 sm:py-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Name *</label>
                   <input
                     type="text"
                     value={paymentOptionForm.name}
                     onChange={(e) => setPaymentOptionForm(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                     placeholder="e.g., PayPal"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Code *</label>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Code *</label>
                   <input
                     type="text"
                     value={paymentOptionForm.code}
                     onChange={(e) => setPaymentOptionForm(prev => ({ ...prev, code: e.target.value.toUpperCase() }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                     placeholder="e.g., PAYPAL"
                   />
                 </div>
@@ -2151,80 +2151,80 @@ function AdminPanel() {
 
   function renderDashboard() {
     return (
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
             <div className="flex items-center">
-              <Users className="w-8 h-8 text-blue-500" />
-              <div className="ml-4">
-                <h3 className="text-lg font-semibold text-gray-700">Total Users</h3>
-                <p className="text-3xl font-bold text-blue-600">{dashboardStats.totalUsers || userStats.total}</p>
+              <Users className="w-6 h-6 sm:w-8 sm:h-8 text-blue-500" />
+              <div className="ml-3 sm:ml-4">
+                <h3 className="text-sm sm:text-lg font-semibold text-gray-700">Total Users</h3>
+                <p className="text-xl sm:text-3xl font-bold text-blue-600">{dashboardStats.totalUsers || userStats.total}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow">
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
             <div className="flex items-center">
-              <DollarSign className="w-8 h-8 text-green-500" />
-              <div className="ml-4">
-                <h3 className="text-lg font-semibold text-gray-700">Revenue</h3>
-                <p className="text-3xl font-bold text-green-600">${dashboardStats.totalRevenue || 0}</p>
+              <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 text-green-500" />
+              <div className="ml-3 sm:ml-4">
+                <h3 className="text-sm sm:text-lg font-semibold text-gray-700">Revenue</h3>
+                <p className="text-xl sm:text-3xl font-bold text-green-600">${dashboardStats.totalRevenue || 0}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow">
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
             <div className="flex items-center">
-              <TrendingUp className="w-8 h-8 text-purple-500" />
-              <div className="ml-4">
-                <h3 className="text-lg font-semibold text-gray-700">Total Picks</h3>
-                <p className="text-3xl font-bold text-purple-600">{dashboardStats.totalPicks || picks.length}</p>
+              <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 text-purple-500" />
+              <div className="ml-3 sm:ml-4">
+                <h3 className="text-sm sm:text-lg font-semibold text-gray-700">Total Picks</h3>
+                <p className="text-xl sm:text-3xl font-bold text-purple-600">{dashboardStats.totalPicks || picks.length}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow">
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
             <div className="flex items-center">
-              <MessageSquare className="w-8 h-8 text-orange-500" />
-              <div className="ml-4">
-                <h3 className="text-lg font-semibold text-gray-700">Support Tickets</h3>
-                <p className="text-3xl font-bold text-orange-600">{dashboardStats.openTickets || supportTickets.length}</p>
+              <MessageSquare className="w-6 h-6 sm:w-8 sm:h-8 text-orange-500" />
+              <div className="ml-3 sm:ml-4">
+                <h3 className="text-sm sm:text-lg font-semibold text-gray-700">Support Tickets</h3>
+                <p className="text-xl sm:text-3xl font-bold text-orange-600">{dashboardStats.openTickets || supportTickets.length}</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* User Plan Distribution */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">Gold Users</h3>
-            <p className="text-3xl font-bold text-yellow-600">{userStats.gold}</p>
-            <p className="text-sm text-gray-500">Premium subscribers</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+            <h3 className="text-sm sm:text-lg font-semibold text-gray-700 mb-2">Gold Users</h3>
+            <p className="text-2xl sm:text-3xl font-bold text-yellow-600">{userStats.gold}</p>
+            <p className="text-xs sm:text-sm text-gray-500">Premium subscribers</p>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">Silver Users</h3>
-            <p className="text-3xl font-bold text-gray-600">{userStats.silver}</p>
-            <p className="text-sm text-gray-500">Standard subscribers</p>
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+            <h3 className="text-sm sm:text-lg font-semibold text-gray-700 mb-2">Silver Users</h3>
+            <p className="text-2xl sm:text-3xl font-bold text-gray-600">{userStats.silver}</p>
+            <p className="text-xs sm:text-sm text-gray-500">Standard subscribers</p>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">Free Users</h3>
-            <p className="text-3xl font-bold text-green-600">{userStats.free}</p>
-            <p className="text-sm text-gray-500">Free tier users</p>
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+            <h3 className="text-sm sm:text-lg font-semibold text-gray-700 mb-2">Free Users</h3>
+            <p className="text-2xl sm:text-3xl font-bold text-green-600">{userStats.free}</p>
+            <p className="text-xs sm:text-sm text-gray-500">Free tier users</p>
           </div>
         </div>
 
         {/* Recent Activity */}
         <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
+          <div className="px-3 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900">Recent Activity</h3>
           </div>
-          <div className="p-6">
-            <div className="space-y-4">
+          <div className="p-3 sm:p-6">
+            <div className="space-y-3 sm:space-y-4">
               {(Array.isArray(dashboardStats.recentUsers) ? dashboardStats.recentUsers : []).slice(0, 5).map((user, idx) => (
                 <div key={user._id || user.id || user.email || `${user.firstName}-${user.lastName}-${user.createdAt}-${idx}`} className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-gray-900">{user.firstName} {user.lastName}</p>
-                    <p className="text-sm text-gray-500">Joined {new Date(user.createdAt).toLocaleDateString()}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm sm:text-base font-medium text-gray-900 truncate">{user.firstName} {user.lastName}</p>
+                    <p className="text-xs sm:text-sm text-gray-500">Joined {new Date(user.createdAt).toLocaleDateString()}</p>
                   </div>
-                  <span className={`px-2 py-1 text-xs rounded-full ${
+                  <span className={`px-2 py-1 text-xs rounded-full ml-2 ${
                     user.plan === 'gold' ? 'bg-yellow-100 text-yellow-800' :
                     user.plan === 'silver' ? 'bg-gray-100 text-gray-800' :
                     'bg-green-100 text-green-800'
@@ -2242,49 +2242,116 @@ function AdminPanel() {
 
   function renderUserManagement() {
     return (
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-900">User Management</h3>
-              <div className="flex items-center space-x-4">
+          <div className="px-3 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900">User Management</h3>
+              <div className="flex items-center space-x-2 sm:space-x-4 w-full sm:w-auto">
                 <input
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search users..."
-                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <button
                   onClick={() => loadData(search)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  className="px-2 sm:px-4 py-1.5 sm:py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                 >
-                  <Search className="w-4 h-4" />
+                  <Search className="w-3 h-3 sm:w-4 sm:h-4" />
                 </button>
               </div>
             </div>
           </div>
-          <div className="overflow-x-auto">
+          {/* Mobile Card View */}
+          <div className="block sm:hidden">
+            <div className="space-y-3 p-3">
+              {users.map((user) => (
+                <div key={user._id} className="bg-gray-50 rounded-lg p-3 space-y-2">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-gray-900 truncate">{user.firstName} {user.lastName}</div>
+                      <div className="text-xs text-gray-500 truncate">{user.email}</div>
+                    </div>
+                    <span className={`px-2 py-1 text-xs rounded-full ml-2 ${
+                      user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
+                      {user.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-xs text-gray-500">Plan</label>
+                      <select
+                        value={user.plan}
+                        onChange={(e) => updateUser(user._id, { plan: e.target.value })}
+                        className="w-full text-xs border border-gray-300 rounded px-2 py-1"
+                      >
+                        <option value="free">Free</option>
+                        <option value="silver">Silver</option>
+                        <option value="gold">Gold</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500">Role</label>
+                      <select
+                        value={user.role}
+                        onChange={(e) => updateUser(user._id, { role: e.target.value })}
+                        className="w-full text-xs border border-gray-300 rounded px-2 py-1"
+                      >
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="flex justify-end space-x-2 pt-2">
+                    <button
+                      onClick={() => viewUserDetails(user._id)}
+                      className="text-blue-600 hover:text-blue-900 p-1"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => updateUser(user._id, { isActive: !user.isActive })}
+                      className="text-yellow-600 hover:text-yellow-900 p-1"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => deleteUser(user._id)}
+                      className="text-red-600 hover:text-red-900 p-1"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden sm:block overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plan</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                  <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plan</th>
+                  <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                  <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {users.map((user) => (
                   <tr key={user._id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-3 lg:px-6 py-4 whitespace-nowrap">
                       <div>
                         <div className="text-sm font-medium text-gray-900">{user.firstName} {user.lastName}</div>
                         <div className="text-sm text-gray-500">{user.email}</div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-3 lg:px-6 py-4 whitespace-nowrap">
                       <select
                         value={user.plan}
                         onChange={(e) => updateUser(user._id, { plan: e.target.value })}
@@ -2295,7 +2362,7 @@ function AdminPanel() {
                         <option value="gold">Gold</option>
                       </select>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-3 lg:px-6 py-4 whitespace-nowrap">
                       <select
                         value={user.role}
                         onChange={(e) => updateUser(user._id, { role: e.target.value })}
@@ -2305,14 +2372,14 @@ function AdminPanel() {
                         <option value="admin">Admin</option>
                       </select>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-3 lg:px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 text-xs rounded-full ${
                         user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                       }`}>
                         {user.isActive ? 'Active' : 'Inactive'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                    <td className="px-3 lg:px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                       <button
                         onClick={() => viewUserDetails(user._id)}
                         className="text-blue-600 hover:text-blue-900"

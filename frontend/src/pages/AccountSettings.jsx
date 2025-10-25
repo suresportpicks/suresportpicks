@@ -263,16 +263,16 @@ const AccountSettings = () => {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-3 sm:p-4 lg:p-6">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold theme-text-primary mb-6">Account Settings</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold theme-text-primary mb-4 sm:mb-6">Account Settings</h1>
 
         {/* Tab Navigation */}
-        <div className="border-b theme-border-primary mb-6">
-          <nav className="-mb-px flex space-x-8">
+        <div className="border-b theme-border-primary mb-4 sm:mb-6">
+          <nav className="-mb-px flex space-x-4 sm:space-x-8 overflow-x-auto">
             <button
               onClick={() => navigate('/dashboard/settings/profile')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+              className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap ${
                 activeTab === 'profile'
                   ? 'border-blue-500 text-blue-600 theme-bg-primary'
                   : 'border-transparent theme-text-primary hover:theme-text-muted hover:border-gray-300 theme-bg-secondary'
@@ -282,7 +282,7 @@ const AccountSettings = () => {
             </button>
             <button
               onClick={() => navigate('/dashboard/settings/password')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+              className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap ${
                 activeTab === 'password'
                   ? 'border-blue-500 text-blue-600 theme-bg-primary'
                   : 'border-transparent theme-text-primary hover:theme-text-muted hover:border-gray-300 theme-bg-secondary'
@@ -292,7 +292,7 @@ const AccountSettings = () => {
             </button>
             <button
               onClick={() => navigate('/dashboard/settings/2fa')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+              className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap ${
                 activeTab === '2fa'
                   ? 'border-blue-500 text-blue-600 theme-bg-primary'
                   : 'border-transparent theme-text-primary hover:theme-text-muted hover:border-gray-300 theme-bg-secondary'
@@ -305,83 +305,83 @@ const AccountSettings = () => {
 
         {/* Success/Error Messages */}
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-3 sm:px-4 py-2 sm:py-3 rounded mb-3 sm:mb-4 text-sm sm:text-base">
             {error}
           </div>
         )}
 
         {success && (
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+          <div className="bg-green-100 border border-green-400 text-green-700 px-3 sm:px-4 py-2 sm:py-3 rounded mb-3 sm:mb-4 text-sm sm:text-base">
             {success}
           </div>
         )}
 
         {/* Profile Settings Tab */}
         {activeTab === 'profile' && (
-          <div className="theme-bg-primary rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-4 theme-text-primary">Profile Information</h2>
+          <div className="theme-bg-primary rounded-lg shadow-md p-4 sm:p-6">
+            <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 theme-text-primary">Profile Information</h2>
             
-            <form onSubmit={handleProfileUpdate} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <form onSubmit={handleProfileUpdate} className="space-y-4 sm:space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <label className="block text-sm font-medium theme-text-primary mb-2">
+                  <label className="block text-sm font-medium theme-text-primary mb-1 sm:mb-2">
                     First Name
                   </label>
                   <input
                     type="text"
                     value={profileData.firstName}
                     onChange={(e) => setProfileData({...profileData, firstName: e.target.value})}
-                    className="w-full px-3 py-2 border theme-border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 theme-bg-primary theme-text-primary"
+                    className="w-full px-3 py-2 border theme-border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 theme-bg-primary theme-text-primary text-sm sm:text-base"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium theme-text-primary mb-2">
+                  <label className="block text-sm font-medium theme-text-primary mb-1 sm:mb-2">
                     Last Name
                   </label>
                   <input
                     type="text"
                     value={profileData.lastName}
                     onChange={(e) => setProfileData({...profileData, lastName: e.target.value})}
-                    className="w-full px-3 py-2 border theme-border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 theme-bg-primary theme-text-primary"
+                    className="w-full px-3 py-2 border theme-border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 theme-bg-primary theme-text-primary text-sm sm:text-base"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium theme-text-primary mb-2">
+                <label className="block text-sm font-medium theme-text-primary mb-1 sm:mb-2">
                   Email Address
                 </label>
                 <input
                   type="email"
                   value={profileData.email}
                   onChange={(e) => setProfileData({...profileData, email: e.target.value})}
-                  className="w-full px-3 py-2 border theme-border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 theme-bg-primary theme-text-primary"
+                  className="w-full px-3 py-2 border theme-border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 theme-bg-primary theme-text-primary text-sm sm:text-base"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium theme-text-primary mb-2">
+                <label className="block text-sm font-medium theme-text-primary mb-1 sm:mb-2">
                   Phone Number
                 </label>
                 <input
                   type="tel"
                   value={profileData.phone}
                   onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
-                  className="w-full px-3 py-2 border theme-border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 theme-bg-primary theme-text-primary"
+                  className="w-full px-3 py-2 border theme-border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 theme-bg-primary theme-text-primary text-sm sm:text-base"
                   placeholder="+1 (555) 123-4567"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium theme-text-primary mb-2">
+                <label className="block text-sm font-medium theme-text-primary mb-1 sm:mb-2">
                   Timezone
                 </label>
                 <select
                   value={profileData.timezone}
                   onChange={(e) => setProfileData({...profileData, timezone: e.target.value})}
-                  className="w-full px-3 py-2 border theme-border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 theme-bg-primary theme-text-primary"
+                  className="w-full px-3 py-2 border theme-border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 theme-bg-primary theme-text-primary text-sm sm:text-base"
                 >
                   <option value="America/New_York">Eastern Time (ET)</option>
                   <option value="America/Chicago">Central Time (CT)</option>
@@ -395,8 +395,8 @@ const AccountSettings = () => {
 
               {/* Notification Preferences */}
               <div>
-                <h3 className="text-lg font-medium theme-text-primary mb-3">Notification Preferences</h3>
-                <div className="space-y-3">
+                <h3 className="text-base sm:text-lg font-medium theme-text-primary mb-2 sm:mb-3">Notification Preferences</h3>
+                <div className="space-y-2 sm:space-y-3">
                   <label className="flex items-center">
                     <input
                       type="checkbox"
@@ -454,7 +454,7 @@ const AccountSettings = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-blue-600 text-white py-2.5 sm:py-3 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base font-medium"
               >
                 {loading ? 'Updating...' : 'Update Profile'}
               </button>
@@ -464,47 +464,47 @@ const AccountSettings = () => {
 
         {/* Password Change Tab */}
         {activeTab === 'password' && (
-          <div className="theme-bg-primary rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-4 theme-text-primary">Change Password</h2>
+          <div className="theme-bg-primary rounded-lg shadow-md p-4 sm:p-6">
+            <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 theme-text-primary">Change Password</h2>
             
-            <form onSubmit={handlePasswordChange} className="space-y-6">
+            <form onSubmit={handlePasswordChange} className="space-y-4 sm:space-y-6">
               <div>
-                <label className="block text-sm font-medium theme-text-primary mb-2">
+                <label className="block text-sm font-medium theme-text-primary mb-1 sm:mb-2">
                   Current Password
                 </label>
                 <input
                   type="password"
                   value={passwordData.currentPassword}
                   onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
-                  className="w-full px-3 py-2 border theme-border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 theme-bg-primary theme-text-primary"
+                  className="w-full px-3 py-2 border theme-border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 theme-bg-primary theme-text-primary text-sm sm:text-base"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium theme-text-primary mb-2">
+                <label className="block text-sm font-medium theme-text-primary mb-1 sm:mb-2">
                   New Password
                 </label>
                 <input
                   type="password"
                   value={passwordData.newPassword}
                   onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
-                  className="w-full px-3 py-2 border theme-border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 theme-bg-primary theme-text-primary"
+                  className="w-full px-3 py-2 border theme-border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 theme-bg-primary theme-text-primary text-sm sm:text-base"
                   minLength={8}
                   required
                 />
-                <p className="text-sm theme-text-muted mt-1">Must be at least 8 characters long</p>
+                <p className="text-xs sm:text-sm theme-text-muted mt-1">Must be at least 8 characters long</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium theme-text-primary mb-2">
+                <label className="block text-sm font-medium theme-text-primary mb-1 sm:mb-2">
                   Confirm New Password
                 </label>
                 <input
                   type="password"
                   value={passwordData.confirmPassword}
                   onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
-                  className="w-full px-3 py-2 border theme-border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 theme-bg-primary theme-text-primary"
+                  className="w-full px-3 py-2 border theme-border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 theme-bg-primary theme-text-primary text-sm sm:text-base"
                   required
                 />
               </div>
@@ -512,16 +512,16 @@ const AccountSettings = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-blue-600 text-white py-2.5 sm:py-3 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base font-medium"
               >
                 {loading ? 'Changing Password...' : 'Change Password'}
               </button>
             </form>
 
             {/* Password Security Tips */}
-            <div className="mt-6 p-4 theme-bg-secondary rounded-lg">
-              <h3 className="font-medium theme-text-primary mb-2">Password Security Tips</h3>
-              <ul className="text-sm theme-text-muted space-y-1">
+            <div className="mt-4 sm:mt-6 p-3 sm:p-4 theme-bg-secondary rounded-lg">
+              <h3 className="font-medium theme-text-primary mb-2 text-sm sm:text-base">Password Security Tips</h3>
+              <ul className="text-xs sm:text-sm theme-text-muted space-y-1">
                 <li>• Use a combination of letters, numbers, and symbols</li>
                 <li>• Avoid using personal information</li>
                 <li>• Don't reuse passwords from other accounts</li>
@@ -533,13 +533,13 @@ const AccountSettings = () => {
 
         {/* Two-Factor Authentication Tab */}
         {activeTab === '2fa' && (
-          <div className="theme-bg-primary rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-4 theme-text-primary">Two-Factor Authentication</h2>
+          <div className="theme-bg-primary rounded-lg shadow-md p-4 sm:p-6">
+            <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 theme-text-primary">Two-Factor Authentication</h2>
             
             {!twoFAData.enabled ? (
               <div>
-                <div className="mb-6">
-                  <p className="theme-text-muted mb-4">
+                <div className="mb-4 sm:mb-6">
+                  <p className="theme-text-muted mb-3 sm:mb-4 text-sm sm:text-base">
                     Two-factor authentication adds an extra layer of security to your account by requiring a verification code from your phone in addition to your password.
                   </p>
                   
@@ -547,33 +547,33 @@ const AccountSettings = () => {
                     <button
                       onClick={handleEnable2FA}
                       disabled={loading}
-                      className="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"
+                      className="bg-green-600 text-white py-2 px-3 sm:px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 text-sm sm:text-base"
                     >
                       {loading ? 'Setting up...' : 'Enable 2FA'}
                     </button>
                   ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-3 sm:space-y-4">
                       <div>
-                        <h3 className="font-medium theme-text-primary mb-2">Step 1: Scan QR Code</h3>
-                        <p className="text-sm theme-text-muted mb-3">
+                        <h3 className="font-medium theme-text-primary mb-2 text-sm sm:text-base">Step 1: Scan QR Code</h3>
+                        <p className="text-xs sm:text-sm theme-text-muted mb-2 sm:mb-3">
                           Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.)
                         </p>
-                        <div className="theme-bg-primary p-4 border theme-border-primary rounded-lg inline-block">
-                          <img src={twoFAData.qrCode} alt="2FA QR Code" className="w-48 h-48" />
+                        <div className="theme-bg-primary p-3 sm:p-4 border theme-border-primary rounded-lg inline-block">
+                          <img src={twoFAData.qrCode} alt="2FA QR Code" className="w-32 h-32 sm:w-48 sm:h-48" />
                         </div>
                         <p className="text-xs theme-text-muted mt-2">
-                          Manual entry key: <code className="theme-bg-secondary px-1 rounded">{twoFAData.secret}</code>
+                          Manual entry key: <code className="theme-bg-secondary px-1 rounded text-xs break-all">{twoFAData.secret}</code>
                         </p>
                       </div>
 
                       <form onSubmit={handleVerify2FA}>
                         <div>
-                          <h3 className="font-medium theme-text-primary mb-2">Step 2: Enter Verification Code</h3>
+                          <h3 className="font-medium theme-text-primary mb-2 text-sm sm:text-base">Step 2: Enter Verification Code</h3>
                           <input
                             type="text"
                             value={twoFAData.verificationCode}
                             onChange={(e) => setTwoFAData({...twoFAData, verificationCode: e.target.value})}
-                            className="w-full px-3 py-2 border theme-border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 theme-bg-primary theme-text-primary"
+                            className="w-full px-3 py-2 border theme-border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 theme-bg-primary theme-text-primary text-sm sm:text-base"
                             placeholder="Enter 6-digit code"
                             maxLength={6}
                             required
@@ -582,7 +582,7 @@ const AccountSettings = () => {
                         <button
                           type="submit"
                           disabled={loading || twoFAData.verificationCode.length !== 6}
-                          className="mt-3 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                          className="mt-3 bg-blue-600 text-white py-2 px-3 sm:px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 text-sm sm:text-base"
                         >
                           {loading ? 'Verifying...' : 'Verify & Enable'}
                         </button>
@@ -593,22 +593,22 @@ const AccountSettings = () => {
               </div>
             ) : (
               <div>
-                <div className="flex items-center mb-4">
-                  <div className="p-2 bg-green-100 rounded-full mr-3">
-                    <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-center mb-3 sm:mb-4">
+                  <div className="p-2 bg-green-100 rounded-full mr-3 flex-shrink-0">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <div>
-                    <h3 className="font-medium theme-text-primary">Two-Factor Authentication is Enabled</h3>
-                    <p className="text-sm theme-text-muted">Your account is protected with 2FA</p>
+                  <div className="min-w-0">
+                    <h3 className="font-medium theme-text-primary text-sm sm:text-base">Two-Factor Authentication is Enabled</h3>
+                    <p className="text-xs sm:text-sm theme-text-muted">Your account is protected with 2FA</p>
                   </div>
                 </div>
 
                 <button
                   onClick={handleDisable2FA}
                   disabled={loading}
-                  className="bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
+                  className="bg-red-600 text-white py-2 px-3 sm:px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50 text-sm sm:text-base"
                 >
                   {loading ? 'Disabling...' : 'Disable 2FA'}
                 </button>
@@ -616,9 +616,9 @@ const AccountSettings = () => {
             )}
 
             {/* 2FA Info */}
-            <div className="mt-6 p-4 theme-bg-secondary rounded-lg">
-              <h3 className="font-medium theme-text-primary mb-2">Important Notes</h3>
-              <ul className="text-sm theme-text-muted space-y-1">
+            <div className="mt-4 sm:mt-6 p-3 sm:p-4 theme-bg-secondary rounded-lg">
+              <h3 className="font-medium theme-text-primary mb-2 text-sm sm:text-base">Important Notes</h3>
+              <ul className="text-xs sm:text-sm theme-text-muted space-y-1">
                 <li>• Keep your authenticator app backed up</li>
                 <li>• Save backup codes in a secure location</li>
                 <li>• Contact support if you lose access to your authenticator</li>

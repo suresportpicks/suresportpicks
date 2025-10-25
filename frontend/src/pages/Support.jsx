@@ -132,16 +132,16 @@ const Support = () => {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-3 sm:p-6">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold theme-text-primary mb-6">Support Center</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold theme-text-primary mb-4 sm:mb-6">Support Center</h1>
 
         {/* Tab Navigation */}
-        <div className="border-b theme-border-primary mb-6">
-          <nav className="-mb-px flex space-x-8">
+        <div className="border-b theme-border-primary mb-4 sm:mb-6">
+          <nav className="-mb-px flex space-x-4 sm:space-x-8">
             <button
               onClick={() => navigate('/dashboard/support/new')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+              className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors ${
                 activeTab === 'new'
                   ? 'border-blue-500 text-blue-600 theme-bg-primary'
                   : 'border-transparent theme-text-primary hover:theme-text-muted hover:border-gray-300 theme-bg-secondary'
@@ -151,7 +151,7 @@ const Support = () => {
             </button>
             <button
               onClick={() => navigate('/dashboard/support/tickets')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+              className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors ${
                 activeTab === 'tickets'
                   ? 'border-blue-500 text-blue-600 theme-bg-primary'
                   : 'border-transparent theme-text-primary hover:theme-text-muted hover:border-gray-300 theme-bg-secondary'
@@ -164,11 +164,11 @@ const Support = () => {
 
         {/* New Ticket Tab */}
         {activeTab === 'new' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
             {/* Ticket Form */}
             <div className="lg:col-span-2">
-              <div className="theme-bg-primary rounded-lg shadow-md p-6">
-                <h2 className="text-xl font-semibold mb-4 theme-text-primary">Create Support Ticket</h2>
+              <div className="theme-bg-primary rounded-lg shadow-md p-4 sm:p-6">
+                <h2 className="text-lg sm:text-xl font-semibold mb-4 theme-text-primary">Create Support Ticket</h2>
                 
                 {error && (
                   <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -184,28 +184,28 @@ const Support = () => {
 
                 <form onSubmit={handleSubmitTicket} className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium theme-text-primary mb-2">
+                    <label className="block text-xs sm:text-sm font-medium theme-text-primary mb-2">
                       Subject *
                     </label>
                     <input
                       type="text"
                       value={newTicket.subject}
                       onChange={(e) => setNewTicket({...newTicket, subject: e.target.value})}
-                      className="w-full px-3 py-2 border theme-border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 theme-bg-primary theme-text-primary"
+                      className="w-full px-3 py-2 border theme-border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 theme-bg-primary theme-text-primary text-sm"
                       placeholder="Brief description of your issue"
                       required
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium theme-text-primary mb-2">
+                      <label className="block text-xs sm:text-sm font-medium theme-text-primary mb-2">
                         Category
                       </label>
                       <select
                         value={newTicket.category}
                         onChange={(e) => setNewTicket({...newTicket, category: e.target.value})}
-                        className="w-full px-3 py-2 border theme-border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 theme-bg-primary theme-text-primary"
+                        className="w-full px-3 py-2 border theme-border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 theme-bg-primary theme-text-primary text-sm"
                       >
                         <option value="general">General Inquiry</option>
                         <option value="account">Account Issues</option>
@@ -218,13 +218,13 @@ const Support = () => {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium theme-text-primary mb-2">
+                      <label className="block text-xs sm:text-sm font-medium theme-text-primary mb-2">
                         Priority
                       </label>
                       <select
                         value={newTicket.priority}
                         onChange={(e) => setNewTicket({...newTicket, priority: e.target.value})}
-                        className="w-full px-3 py-2 border theme-border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 theme-bg-primary theme-text-primary"
+                        className="w-full px-3 py-2 border theme-border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 theme-bg-primary theme-text-primary text-sm"
                       >
                         <option value="low">Low</option>
                         <option value="medium">Medium</option>
@@ -234,14 +234,14 @@ const Support = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium theme-text-primary mb-2">
+                    <label className="block text-xs sm:text-sm font-medium theme-text-primary mb-2">
                       Description *
                     </label>
                     <textarea
                       value={newTicket.description}
                       onChange={(e) => setNewTicket({...newTicket, description: e.target.value})}
-                      rows={6}
-                      className="w-full px-3 py-2 border theme-border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 theme-bg-primary theme-text-primary"
+                      rows={4}
+                      className="w-full px-3 py-2 border theme-border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 theme-bg-primary theme-text-primary text-sm"
                       placeholder="Please provide detailed information about your issue..."
                       required
                     />
@@ -250,7 +250,7 @@ const Support = () => {
                   <button
                     type="submit"
                     disabled={submitLoading}
-                    className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-blue-600 text-white py-2.5 sm:py-3 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base font-medium"
                   >
                     {submitLoading ? 'Creating Ticket...' : 'Create Ticket'}
                   </button>
@@ -259,21 +259,21 @@ const Support = () => {
             </div>
 
             {/* Help & FAQ */}
-            <div className="space-y-6">
-              <div className="theme-bg-primary rounded-lg shadow-md p-6">
-                <h3 className="text-lg font-semibold mb-4 theme-text-primary">Quick Help</h3>
+            <div className="space-y-4 sm:space-y-6">
+              <div className="theme-bg-primary rounded-lg shadow-md p-4 sm:p-6">
+                <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 theme-text-primary">Quick Help</h3>
                 <div className="space-y-3">
                   <div>
-                    <h4 className="font-medium theme-text-primary">Response Times</h4>
-                    <ul className="text-sm theme-text-muted mt-1 space-y-1">
+                    <h4 className="text-sm sm:text-base font-medium theme-text-primary">Response Times</h4>
+                    <ul className="text-xs sm:text-sm theme-text-muted mt-1 space-y-1">
                       <li>• High Priority: 2-4 hours</li>
                       <li>• Medium Priority: 12-24 hours</li>
                       <li>• Low Priority: 24-48 hours</li>
                     </ul>
                   </div>
                   <div>
-                    <h4 className="font-medium theme-text-primary">Contact Info</h4>
-                    <p className="text-sm theme-text-muted mt-1">
+                    <h4 className="text-sm sm:text-base font-medium theme-text-primary">Contact Info</h4>
+                    <p className="text-xs sm:text-sm theme-text-muted mt-1">
                       Email: support@suresportpicks.com<br />
                       Phone: 1-800-PICKS-24
                     </p>
@@ -281,20 +281,20 @@ const Support = () => {
                 </div>
               </div>
 
-              <div className="theme-bg-primary rounded-lg shadow-md p-6">
-                <h3 className="text-lg font-semibold mb-4 theme-text-primary">Common Issues</h3>
+              <div className="theme-bg-primary rounded-lg shadow-md p-4 sm:p-6">
+                <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 theme-text-primary">Common Issues</h3>
                 <div className="space-y-3">
                   <div className="border-l-4 border-blue-500 pl-3">
-                    <h4 className="font-medium theme-text-primary">Can't access picks?</h4>
-                    <p className="text-sm theme-text-muted">Check your subscription status and ensure payment is up to date.</p>
+                    <h4 className="text-sm sm:text-base font-medium theme-text-primary">Can't access picks?</h4>
+                    <p className="text-xs sm:text-sm theme-text-muted">Check your subscription status and ensure payment is up to date.</p>
                   </div>
                   <div className="border-l-4 border-green-500 pl-3">
-                    <h4 className="font-medium theme-text-primary">Payment failed?</h4>
-                    <p className="text-sm theme-text-muted">Verify your payment method and try again, or contact your bank.</p>
+                    <h4 className="text-sm sm:text-base font-medium theme-text-primary">Payment failed?</h4>
+                    <p className="text-xs sm:text-sm theme-text-muted">Verify your payment method and try again, or contact your bank.</p>
                   </div>
                   <div className="border-l-4 border-yellow-500 pl-3">
-                    <h4 className="font-medium theme-text-primary">Account locked?</h4>
-                    <p className="text-sm theme-text-muted">Use the password reset feature or contact support immediately.</p>
+                    <h4 className="text-sm sm:text-base font-medium theme-text-primary">Account locked?</h4>
+                    <p className="text-xs sm:text-sm theme-text-muted">Use the password reset feature or contact support immediately.</p>
                   </div>
                 </div>
               </div>
@@ -319,72 +319,121 @@ const Support = () => {
                 <p className="text-sm theme-text-muted mt-1">Create your first ticket to get help</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y theme-border-primary">
-                  <thead className="theme-bg-secondary">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium theme-text-muted uppercase tracking-wider">
-                        Ticket
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium theme-text-muted uppercase tracking-wider">
-                        Category
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium theme-text-muted uppercase tracking-wider">
-                        Priority
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium theme-text-muted uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium theme-text-muted uppercase tracking-wider">
-                        Created
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium theme-text-muted uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="theme-bg-primary divide-y theme-border-primary">
-                    {tickets.map((ticket) => (
-                      <tr key={ticket._id} className="hover:theme-bg-secondary">
-                        <td className="px-6 py-4">
-                          <div>
-                            <div className="text-sm font-medium theme-text-primary">
-                              #{ticket.ticketNumber}
-                            </div>
-                            <div className="text-sm theme-text-muted truncate max-w-xs">
-                              {ticket.subject}
-                            </div>
+              <>
+                {/* Mobile Card View */}
+                <div className="block sm:hidden p-4 space-y-4">
+                  {tickets.map((ticket) => (
+                    <div key={ticket._id} className="theme-bg-secondary rounded-lg p-4 border theme-border-primary">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <div className="text-sm font-medium theme-text-primary">
+                            #{ticket.ticketNumber}
                           </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm theme-text-muted capitalize">
-                          {ticket.category}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPriorityColor(ticket.priority)}`}>
+                          <div className="text-xs theme-text-muted mt-1">
+                            {ticket.subject}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => setSelectedTicket(ticket)}
+                          className="text-blue-600 hover:text-blue-900 text-xs font-medium"
+                        >
+                          View
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <span className="theme-text-muted">Category:</span>
+                          <span className="theme-text-primary ml-1 capitalize">{ticket.category}</span>
+                        </div>
+                        <div>
+                          <span className="theme-text-muted">Priority:</span>
+                          <span className={`ml-1 px-2 py-1 rounded-full text-xs font-semibold ${getPriorityColor(ticket.priority)}`}>
                             {ticket.priority}
                           </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(ticket.status)}`}>
+                        </div>
+                        <div>
+                          <span className="theme-text-muted">Status:</span>
+                          <span className={`ml-1 px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(ticket.status)}`}>
                             {ticket.status.replace('_', ' ')}
                           </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm theme-text-muted">
-                          {formatDate(ticket.createdAt)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <button
-                            onClick={() => setSelectedTicket(ticket)}
-                            className="text-blue-600 hover:text-blue-900"
-                          >
-                            View
-                          </button>
-                        </td>
+                        </div>
+                        <div>
+                          <span className="theme-text-muted">Created:</span>
+                          <span className="theme-text-primary ml-1">{formatDate(ticket.createdAt)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden sm:block overflow-x-auto">
+                  <table className="min-w-full divide-y theme-border-primary">
+                    <thead className="theme-bg-secondary">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium theme-text-muted uppercase tracking-wider">
+                          Ticket
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium theme-text-muted uppercase tracking-wider">
+                          Category
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium theme-text-muted uppercase tracking-wider">
+                          Priority
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium theme-text-muted uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium theme-text-muted uppercase tracking-wider">
+                          Created
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium theme-text-muted uppercase tracking-wider">
+                          Actions
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="theme-bg-primary divide-y theme-border-primary">
+                      {tickets.map((ticket) => (
+                        <tr key={ticket._id} className="hover:theme-bg-secondary">
+                          <td className="px-6 py-4">
+                            <div>
+                              <div className="text-sm font-medium theme-text-primary">
+                                #{ticket.ticketNumber}
+                              </div>
+                              <div className="text-sm theme-text-muted truncate max-w-xs">
+                                {ticket.subject}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm theme-text-muted capitalize">
+                            {ticket.category}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPriorityColor(ticket.priority)}`}>
+                              {ticket.priority}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(ticket.status)}`}>
+                              {ticket.status.replace('_', ' ')}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm theme-text-muted">
+                            {formatDate(ticket.createdAt)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button
+                              onClick={() => setSelectedTicket(ticket)}
+                              className="text-blue-600 hover:text-blue-900"
+                            >
+                              View
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
           </div>
         )}
@@ -392,25 +441,25 @@ const Support = () => {
         {/* Ticket Detail Modal */}
         {selectedTicket && (
           <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border theme-border-primary w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md theme-bg-primary">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold theme-text-primary">
+            <div className="relative top-4 sm:top-20 mx-auto p-3 sm:p-5 border theme-border-primary w-11/12 sm:w-3/4 lg:w-1/2 shadow-lg rounded-md theme-bg-primary max-h-[95vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-3 sm:mb-4">
+                <h3 className="text-base sm:text-lg font-semibold theme-text-primary">
                   Ticket #{selectedTicket.ticketNumber}
                 </h3>
                 <button
                   onClick={() => setSelectedTicket(null)}
                   className="theme-text-muted hover:theme-text-primary"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
               
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <div>
-                  <h4 className="font-medium theme-text-primary">{selectedTicket.subject}</h4>
-                  <div className="flex space-x-4 mt-2">
+                  <h4 className="text-sm sm:text-base font-medium theme-text-primary">{selectedTicket.subject}</h4>
+                  <div className="flex flex-wrap gap-2 mt-2">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(selectedTicket.status)}`}>
                       {selectedTicket.status.replace('_', ' ')}
                     </span>
@@ -424,25 +473,25 @@ const Support = () => {
                 </div>
                 
                 <div>
-                  <h5 className="font-medium theme-text-primary mb-2">Description:</h5>
-                  <p className="theme-text-muted whitespace-pre-wrap">{selectedTicket.description}</p>
+                  <h5 className="text-sm sm:text-base font-medium theme-text-primary mb-2">Description:</h5>
+                  <p className="text-sm theme-text-muted whitespace-pre-wrap">{selectedTicket.description}</p>
                 </div>
 
                 {selectedTicket.responses && selectedTicket.responses.length > 0 && (
                   <div>
-                    <h5 className="font-medium theme-text-primary mb-2">Responses:</h5>
-                    <div className="space-y-3 max-h-60 overflow-y-auto">
+                    <h5 className="text-sm sm:text-base font-medium theme-text-primary mb-2">Responses:</h5>
+                    <div className="space-y-2 sm:space-y-3 max-h-48 sm:max-h-60 overflow-y-auto">
                       {selectedTicket.responses.map((response, index) => (
-                        <div key={index} className={`p-3 rounded-lg ${response.isAdmin ? 'bg-blue-50' : 'theme-bg-secondary'}`}>
+                        <div key={index} className={`p-2 sm:p-3 rounded-lg ${response.isAdmin ? 'bg-blue-50' : 'theme-bg-secondary'}`}>
                           <div className="flex justify-between items-center mb-1">
-                            <span className="text-sm font-medium text-black">
+                            <span className="text-xs sm:text-sm font-medium text-black">
                               {response.isAdmin ? 'Support Team' : 'You'}
                             </span>
                             <span className="text-xs text-black">
                               {formatDate(response.createdAt)}
                             </span>
                           </div>
-                          <p className="text-sm text-black">{response.message}</p>
+                          <p className="text-xs sm:text-sm text-black">{response.message}</p>
                         </div>
                       ))}
                     </div>

@@ -90,11 +90,11 @@ const AnimatedCounters = () => {
   }
 
   return (
-    <section className="py-20 bg-gradient-to-b from-navy-950 to-navy-900 relative overflow-hidden">
+    <section className="py-12 sm:py-16 md:py-20 bg-gradient-to-b from-navy-950 to-navy-900 relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-0 left-1/4 w-72 h-72 bg-gold-500 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-primary-500 rounded-full blur-3xl"></div>
+        <div className="absolute top-0 left-1/4 w-48 h-48 sm:w-72 sm:h-72 bg-gold-500 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 right-1/4 w-48 h-48 sm:w-72 sm:h-72 bg-primary-500 rounded-full blur-3xl"></div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -103,7 +103,7 @@ const AnimatedCounters = () => {
           variants={containerVariants}
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
-          className="grid grid-cols-1 md:grid-cols-3 gap-8"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"
         >
           {counters.map((counter, index) => {
             const Icon = counter.icon
@@ -119,13 +119,13 @@ const AnimatedCounters = () => {
                   transition={{ duration: 0.3 }}
                 >
                   {/* Icon Background */}
-                  <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-navy-800 to-navy-900 rounded-2xl flex items-center justify-center border border-gold-500/20 group-hover:border-gold-500/40 transition-all duration-300 shadow-lg shadow-black/20">
-                    <Icon className={`w-10 h-10 ${counter.color}`} />
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 sm:mb-6 bg-gradient-to-br from-navy-800 to-navy-900 rounded-2xl flex items-center justify-center border border-gold-500/20 group-hover:border-gold-500/40 transition-all duration-300 shadow-lg shadow-black/20">
+                    <Icon className={`w-8 h-8 sm:w-10 sm:h-10 ${counter.color}`} />
                   </div>
 
                   {/* Counter */}
                   <motion.div
-                    className="text-5xl md:text-6xl font-bold mb-2 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent"
+                    className="text-4xl sm:text-5xl md:text-6xl font-bold mb-2 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent leading-tight"
                     initial={{ scale: 0.5, opacity: 0 }}
                     animate={isInView ? { scale: 1, opacity: 1 } : { scale: 0.5, opacity: 0 }}
                     transition={{ delay: index * 0.2 + 0.5, duration: 0.8, ease: "easeOut" }}
@@ -138,12 +138,12 @@ const AnimatedCounters = () => {
                   </motion.div>
 
                   {/* Label */}
-                  <h3 className="text-xl font-semibold text-gold-400 mb-2">
+                  <h3 className="text-lg sm:text-xl font-semibold text-gold-400 mb-2">
                     {counter.label}
                   </h3>
 
                   {/* Description */}
-                  <p className="text-gray-400 text-sm">
+                  <p className="text-gray-400 text-sm sm:text-base">
                     {counter.description}
                   </p>
 
@@ -163,7 +163,7 @@ const AnimatedCounters = () => {
           initial={{ scaleX: 0 }}
           animate={isInView ? { scaleX: 1 } : { scaleX: 0 }}
           transition={{ delay: 1, duration: 1.5, ease: "easeOut" }}
-          className="mt-16 h-px bg-gradient-to-r from-transparent via-gold-500/50 to-transparent"
+          className="mt-12 sm:mt-16 h-px bg-gradient-to-r from-transparent via-gold-500/50 to-transparent"
         />
       </div>
     </section>

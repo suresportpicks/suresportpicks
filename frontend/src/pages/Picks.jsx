@@ -125,7 +125,7 @@ const Picks = () => {
       <Navbar />
       
       {/* Hero Section */}
-      <section className="pt-24 pb-16 relative overflow-hidden">
+      <section className="pt-20 sm:pt-24 pb-8 sm:pb-16 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-navy-900 via-navy-950 to-black"></div>
         <div 
           className="absolute inset-0 opacity-10"
@@ -136,19 +136,19 @@ const Picks = () => {
           }}
         ></div>
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             className="text-center"
           >
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold mb-4 sm:mb-6">
               <span className="bg-gradient-to-r from-gold-400 to-gold-600 bg-clip-text text-transparent">
                 Expert Picks
               </span>
             </h1>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
+            <p className="text-base sm:text-xl text-gray-300 max-w-3xl mx-auto mb-6 sm:mb-8 px-4">
               Data-driven predictions from our team of professional analysts with proven track records
             </p>
           </motion.div>
@@ -156,34 +156,35 @@ const Picks = () => {
       </section>
 
       {/* Filters and Search */}
-      <section className="py-8 bg-navy-900/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-4 sm:py-8 bg-navy-900/50">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
             {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <div className="relative w-full lg:w-auto">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
               <input
                 type="text"
                 placeholder="Search picks..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 bg-navy-800 border border-gold-500/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold-500"
+                className="w-full lg:w-64 pl-8 sm:pl-10 pr-4 py-2 bg-navy-800 border border-gold-500/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gold-500 text-sm sm:text-base"
               />
             </div>
 
             {/* Filters */}
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1 sm:gap-2">
               {filters.map((filter) => (
                 <button
                   key={filter.id}
                   onClick={() => setActiveFilter(filter.id)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                  className={`px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium transition-all duration-200 text-xs sm:text-sm ${
                     activeFilter === filter.id
                       ? 'bg-gold-500 text-navy-950'
                       : 'bg-navy-800 text-gray-300 hover:bg-navy-700'
                   }`}
                 >
-                  {filter.label} ({filter.count})
+                  <span className="hidden sm:inline">{filter.label} ({filter.count})</span>
+                  <span className="sm:hidden">{filter.label}</span>
                 </button>
               ))}
             </div>
@@ -192,9 +193,9 @@ const Picks = () => {
       </section>
 
       {/* Picks Grid */}
-      <section className="py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <section className="py-8 sm:py-16">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {filteredPicks.map((pick, index) => (
               <motion.div
                 key={pick.id}
@@ -204,59 +205,59 @@ const Picks = () => {
                 className="bg-navy-800/50 backdrop-blur-sm rounded-xl overflow-hidden border border-gold-500/20 hover:border-gold-500/40 transition-all duration-300"
               >
                 {/* Image */}
-                <div className="relative h-48 overflow-hidden">
+                <div className="relative h-40 sm:h-48 overflow-hidden">
                   <img
                     src={pick.image}
                     alt={pick.game}
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-navy-950/80 to-transparent"></div>
-                  <div className="absolute top-4 left-4">
-                    <span className="px-3 py-1 bg-navy-950/80 backdrop-blur-sm rounded-full text-sm font-medium text-gold-400">
+                  <div className="absolute top-3 sm:top-4 left-3 sm:left-4">
+                    <span className="px-2 sm:px-3 py-1 bg-navy-950/80 backdrop-blur-sm rounded-full text-xs sm:text-sm font-medium text-gold-400">
                       {pick.sport}
                     </span>
                   </div>
-                  <div className="absolute top-4 right-4">
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(pick.status)}`}>
+                  <div className="absolute top-3 sm:top-4 right-3 sm:right-4">
+                    <span className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${getStatusColor(pick.status)}`}>
                       {pick.status.charAt(0).toUpperCase() + pick.status.slice(1)}
                     </span>
                   </div>
                 </div>
 
                 {/* Content */}
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-lg font-bold text-white">{pick.game}</h3>
-                    <div className="flex items-center space-x-1">
-                      <Star className={`w-4 h-4 ${getConfidenceColor(pick.confidence)}`} />
-                      <span className={`text-sm font-semibold ${getConfidenceColor(pick.confidence)}`}>
+                <div className="p-4 sm:p-6">
+                  <div className="flex items-start justify-between mb-3">
+                    <h3 className="text-base sm:text-lg font-bold text-white flex-1 mr-2">{pick.game}</h3>
+                    <div className="flex items-center space-x-1 flex-shrink-0">
+                      <Star className={`w-3 h-3 sm:w-4 sm:h-4 ${getConfidenceColor(pick.confidence)}`} />
+                      <span className={`text-xs sm:text-sm font-semibold ${getConfidenceColor(pick.confidence)}`}>
                         {pick.confidence}%
                       </span>
                     </div>
                   </div>
 
-                  <div className="space-y-3">
+                  <div className="space-y-2 sm:space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-400">Pick:</span>
-                      <span className="text-white font-semibold">{pick.pick}</span>
+                      <span className="text-gray-400 text-xs sm:text-sm">Pick:</span>
+                      <span className="text-white font-semibold text-xs sm:text-sm">{pick.pick}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-400">Odds:</span>
-                      <span className="text-green-400 font-semibold">{pick.odds}</span>
+                      <span className="text-gray-400 text-xs sm:text-sm">Odds:</span>
+                      <span className="text-green-400 font-semibold text-xs sm:text-sm">{pick.odds}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-400">Time:</span>
-                      <span className="text-white">{pick.time}</span>
+                      <span className="text-gray-400 text-xs sm:text-sm">Time:</span>
+                      <span className="text-white text-xs sm:text-sm">{pick.time}</span>
                     </div>
                   </div>
 
-                  <div className="mt-4 pt-4 border-t border-navy-700">
-                    <p className="text-sm text-gray-300">{pick.analysis}</p>
+                  <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-navy-700">
+                    <p className="text-xs sm:text-sm text-gray-300">{pick.analysis}</p>
                   </div>
 
-                  <div className="mt-4 flex items-center justify-between">
-                    <span className="text-sm text-gray-400">{pick.date}</span>
-                    <button className="px-4 py-2 bg-gradient-to-r from-gold-500 to-gold-600 text-navy-950 rounded-lg font-semibold hover:from-gold-600 hover:to-gold-700 transition-all duration-200">
+                  <div className="mt-3 sm:mt-4 flex items-center justify-between">
+                    <span className="text-xs sm:text-sm text-gray-400">{pick.date}</span>
+                    <button className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-gold-500 to-gold-600 text-navy-950 rounded-lg font-semibold hover:from-gold-600 hover:to-gold-700 transition-all duration-200 text-xs sm:text-sm">
                       View Details
                     </button>
                   </div>
@@ -268,21 +269,21 @@ const Picks = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-gold-500/10 to-gold-600/10">
+      <section className="py-8 sm:py-16 bg-gradient-to-r from-navy-900 to-navy-800">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.6 }}
           >
-            <h2 className="text-3xl font-bold text-white mb-4">
-              Want Access to Premium Picks?
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4 sm:mb-6">
+              Ready for Premium Picks?
             </h2>
-            <p className="text-xl text-gray-300 mb-8">
-              Join thousands of successful bettors with our premium subscription plans
+            <p className="text-base sm:text-xl text-gray-300 mb-6 sm:mb-8 px-2">
+              Get access to our exclusive VIP picks with higher confidence ratings and detailed analysis.
             </p>
-            <button className="px-8 py-4 bg-gradient-to-r from-gold-500 to-gold-600 text-navy-950 rounded-lg font-bold text-lg hover:from-gold-600 hover:to-gold-700 transition-all duration-200 shadow-lg shadow-gold-500/25">
-              View Plans
+            <button className="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-gold-500 to-gold-600 text-navy-950 rounded-lg font-bold text-base sm:text-lg hover:from-gold-600 hover:to-gold-700 transition-all duration-200 transform hover:scale-105">
+              Upgrade to Premium
             </button>
           </motion.div>
         </div>

@@ -290,16 +290,16 @@ const Withdraw = () => {
   const maxWithdraw = Math.min(availableBalance, 5000)
 
   return (
-    <div className="p-6">
+    <div className="p-3 sm:p-6">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold theme-text-primary mb-6">Withdraw</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold theme-text-primary mb-4 sm:mb-6">Withdraw</h1>
 
         {/* Tab Navigation */}
-        <div className="border-b theme-border-primary mb-6">
-          <nav className="-mb-px flex space-x-8">
+        <div className="border-b theme-border-primary mb-4 sm:mb-6">
+          <nav className="-mb-px flex space-x-4 sm:space-x-8">
             <button
               onClick={() => navigate('/dashboard/withdraw')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+              className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors ${
                 activeTab === 'withdraw'
                   ? 'border-blue-500 text-blue-600 theme-bg-primary'
                   : 'border-transparent theme-text-primary hover:theme-text-muted hover:border-gray-300 theme-bg-secondary'
@@ -309,7 +309,7 @@ const Withdraw = () => {
             </button>
             <button
               onClick={() => navigate('/dashboard/withdraw/history')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+              className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors ${
                 activeTab === 'history'
                   ? 'border-blue-500 text-blue-600 theme-bg-primary'
                   : 'border-transparent theme-text-primary hover:theme-text-muted hover:border-gray-300 theme-bg-secondary'
@@ -322,14 +322,14 @@ const Withdraw = () => {
 
         {/* Withdraw Now Tab */}
         {activeTab === 'withdraw' && (
-          <div className="theme-bg-primary rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-4 theme-text-primary">Request Withdrawal</h2>
+          <div className="theme-bg-primary rounded-lg shadow-md p-4 sm:p-6">
+            <h2 className="text-lg sm:text-xl font-semibold mb-4 theme-text-primary">Request Withdrawal</h2>
             
             {/* Current Balance */}
-            <div className="bg-green-50 rounded-lg p-4 mb-6">
+            <div className="bg-green-50 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
               <div className="flex items-center justify-between">
-                <span className="theme-text-muted">Available Balance:</span>
-                <span className="text-2xl font-bold text-green-600">
+                <span className="theme-text-muted text-sm sm:text-base">Available Balance:</span>
+                <span className="text-xl sm:text-2xl font-bold text-green-600">
                   ${availableBalance.toFixed(2)}
                 </span>
               </div>
@@ -347,7 +347,7 @@ const Withdraw = () => {
               </div>
             )}
 
-            <form onSubmit={handleWithdraw} className="space-y-6">
+            <form onSubmit={handleWithdraw} className="space-y-4 sm:space-y-6">
               <div>
                 <label className="block text-sm font-medium theme-text-primary mb-2">
                   Withdrawal Amount
@@ -398,8 +398,8 @@ const Withdraw = () => {
 
               {/* Dynamic Payment Details Forms */}
               {withdrawMethod !== 'bank' && (
-                <div className="space-y-4 p-4 theme-bg-secondary rounded-lg">
-                  <h3 className="font-medium theme-text-primary">
+                <div className="space-y-3 sm:space-y-4 p-3 sm:p-4 theme-bg-secondary rounded-lg">
+                  <h3 className="font-medium theme-text-primary text-sm sm:text-base">
                     {withdrawMethod.charAt(0).toUpperCase() + withdrawMethod.slice(1)} Details
                   </h3>
                   
@@ -439,32 +439,32 @@ const Withdraw = () => {
 
                   {/* Zelle */}
                   {withdrawMethod === 'zelle' && (
-                    <div className="space-y-4">
+                    <div className="space-y-3 sm:space-y-4">
                       <div>
-                        <label className="block text-sm font-medium theme-text-primary mb-1">
+                        <label className="block text-xs sm:text-sm font-medium theme-text-primary mb-1">
                           Email Address
                         </label>
                         <input
                           type="email"
                           value={paymentDetails.zelle.email}
                           onChange={(e) => updatePaymentDetails('zelle', 'email', e.target.value)}
-                          className="w-full px-3 py-2 border theme-border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 theme-bg-primary theme-text-primary"
+                          className="w-full px-3 py-2 border theme-border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 theme-bg-primary theme-text-primary text-sm"
                           placeholder="your-email@example.com"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium theme-text-primary mb-1">
+                        <label className="block text-xs sm:text-sm font-medium theme-text-primary mb-1">
                           Phone Number (Alternative)
                         </label>
                         <input
                           type="tel"
                           value={paymentDetails.zelle.phone}
                           onChange={(e) => updatePaymentDetails('zelle', 'phone', e.target.value)}
-                          className="w-full px-3 py-2 border theme-border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 theme-bg-primary theme-text-primary"
+                          className="w-full px-3 py-2 border theme-border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 theme-bg-primary theme-text-primary text-sm"
                           placeholder="+1 (555) 123-4567"
                         />
                       </div>
-                      <p className="text-sm theme-text-muted">Provide either email or phone number</p>
+                      <p className="text-xs sm:text-sm theme-text-muted">Provide either email or phone number</p>
                     </div>
                   )}
 
@@ -754,8 +754,8 @@ const Withdraw = () => {
 
               {/* Bank Details for Bank Transfer */}
               {withdrawMethod === 'bank' && (
-                <div className="space-y-4 p-4 theme-bg-secondary rounded-lg">
-                  <h3 className="font-medium theme-text-primary">Bank Account Details</h3>
+                <div className="space-y-3 sm:space-y-4 p-3 sm:p-4 theme-bg-secondary rounded-lg">
+                  <h3 className="font-medium theme-text-primary text-sm sm:text-base">Bank Account Details</h3>
                   <div>
                     <label className="block text-sm font-medium theme-text-primary mb-1">
                       Account Holder Name
@@ -797,17 +797,17 @@ const Withdraw = () => {
 
               {/* Quick Amount Buttons */}
               <div>
-                <label className="block text-sm font-medium theme-text-primary mb-2">
+                <label className="block text-xs sm:text-sm font-medium theme-text-primary mb-2">
                   Quick Amounts
                 </label>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {[50, 100, 250, 500].map((amount) => (
                     <button
                       key={amount}
                       type="button"
                       onClick={() => setWithdrawAmount(amount.toString())}
                       disabled={amount > availableBalance}
-                      className="px-4 py-2 border theme-border-primary rounded-md hover:theme-bg-secondary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed theme-bg-primary theme-text-primary"
+                      className="px-2 sm:px-4 py-2 border theme-border-primary rounded-md hover:theme-bg-secondary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed theme-bg-primary theme-text-primary text-xs sm:text-sm"
                     >
                       ${amount}
                     </button>
@@ -816,7 +816,7 @@ const Withdraw = () => {
                 <button
                   type="button"
                   onClick={() => setWithdrawAmount(availableBalance.toString())}
-                  className="mt-2 text-sm text-blue-600 hover:text-blue-800"
+                  className="mt-2 text-xs sm:text-sm text-blue-600 hover:text-blue-800"
                 >
                   Withdraw All (${availableBalance.toFixed(2)})
                 </button>
@@ -832,9 +832,9 @@ const Withdraw = () => {
             </form>
 
             {/* Processing Info */}
-            <div className="mt-6 p-4 bg-yellow-50 rounded-lg">
-              <h3 className="font-medium text-yellow-900 mb-2">Processing Information</h3>
-              <ul className="text-sm text-yellow-800 space-y-1">
+            <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-yellow-50 rounded-lg">
+              <h3 className="font-medium text-yellow-900 mb-2 text-sm sm:text-base">Processing Information</h3>
+              <ul className="text-xs sm:text-sm text-yellow-800 space-y-1">
                 <li>• PayPal, Venmo, Zelle, Cash App: 1-2 business days</li>
                 <li>• Apple Pay, Google Pay: 1-3 business days</li>
                 <li>• Bank transfers (ACH): 1-3 business days</li>
@@ -849,8 +849,8 @@ const Withdraw = () => {
 
         {/* Withdrawal History Tab */}
         {activeTab === 'history' && (
-          <div className="theme-bg-primary rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-4 theme-text-primary">Withdrawal History</h2>
+          <div className="theme-bg-primary rounded-lg shadow-md p-4 sm:p-6">
+            <h2 className="text-lg sm:text-xl font-semibold mb-4 theme-text-primary">Withdrawal History</h2>
             
             {loading ? (
               <div className="text-center py-8">
@@ -866,22 +866,22 @@ const Withdraw = () => {
                 <table className="min-w-full divide-y theme-border-primary">
                   <thead className="theme-bg-secondary">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium theme-text-muted uppercase tracking-wider">
+                      <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium theme-text-muted uppercase tracking-wider">
                         Date
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium theme-text-muted uppercase tracking-wider">
+                      <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium theme-text-muted uppercase tracking-wider">
                         Amount
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium theme-text-muted uppercase tracking-wider">
+                      <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium theme-text-muted uppercase tracking-wider hidden sm:table-cell">
                         Method
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium theme-text-muted uppercase tracking-wider">
+                      <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium theme-text-muted uppercase tracking-wider">
                         Status
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium theme-text-muted uppercase tracking-wider">
+                      <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium theme-text-muted uppercase tracking-wider hidden md:table-cell">
                         Transaction ID
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium theme-text-muted uppercase tracking-wider">
+                      <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium theme-text-muted uppercase tracking-wider hidden lg:table-cell">
                         Reason
                       </th>
                     </tr>
@@ -889,26 +889,26 @@ const Withdraw = () => {
                   <tbody className="theme-bg-primary divide-y theme-border-primary">
                     {withdrawHistory.map((withdrawal) => (
                       <tr key={withdrawal.id} className="hover:theme-bg-secondary">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm theme-text-primary">
+                        <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm theme-text-primary">
                           {formatDate(withdrawal.createdAt)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium theme-text-primary">
+                        <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm font-medium theme-text-primary">
                           ${withdrawal.amount.toFixed(2)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm theme-text-muted capitalize">
+                        <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm theme-text-muted capitalize hidden sm:table-cell">
                           {withdrawal.withdrawMethod || withdrawal.paymentMethod}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(withdrawal.status)}`}>
+                        <td className="px-2 sm:px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-1 sm:px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(withdrawal.status)}`}>
                             {withdrawal.status}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm theme-text-muted font-mono">
+                        <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm theme-text-muted font-mono hidden md:table-cell">
                           {withdrawal.status === 'rejected' ? 'N/A' : 
                            withdrawal.status === 'pending' ? 'Pending' :
                            withdrawal.transactionId || 'N/A'}
                         </td>
-                        <td className="px-6 py-4 text-sm theme-text-muted max-w-xs">
+                        <td className="px-2 sm:px-6 py-4 text-xs sm:text-sm theme-text-muted max-w-xs hidden lg:table-cell">
                           {withdrawal.status === 'rejected' && (withdrawal.rejectionReason || withdrawal.adminNotes) ? (
                             <button
                               onClick={() => {
@@ -916,7 +916,7 @@ const Withdraw = () => {
                                 setSelectedReason(reasonText)
                                 setShowReasonModal(true)
                               }}
-                              className="text-red-600 bg-red-50 px-2 py-1 rounded text-xs hover:bg-red-100 cursor-pointer transition-colors"
+                              className="text-red-600 bg-red-50 px-1 sm:px-2 py-1 rounded text-xs hover:bg-red-100 cursor-pointer transition-colors"
                             >
                               {(withdrawal.rejectionReason || withdrawal.adminNotes).length > 30 
                                 ? `${(withdrawal.rejectionReason || withdrawal.adminNotes).substring(0, 30)}...` 
@@ -938,11 +938,11 @@ const Withdraw = () => {
 
         {/* Rejection Reason Modal */}
         {showReasonModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="theme-bg-primary rounded-lg p-6 max-w-md w-full mx-4">
-              <h3 className="text-lg font-semibold theme-text-primary mb-4">Rejection Reason</h3>
-              <div className="theme-bg-secondary p-4 rounded-lg mb-4">
-                <p className="theme-text-primary text-sm">{selectedReason}</p>
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="theme-bg-primary rounded-lg p-4 sm:p-6 max-w-md w-full">
+              <h3 className="text-base sm:text-lg font-semibold theme-text-primary mb-4">Rejection Reason</h3>
+              <div className="theme-bg-secondary p-3 sm:p-4 rounded-lg mb-4">
+                <p className="theme-text-primary text-xs sm:text-sm">{selectedReason}</p>
               </div>
               <div className="flex justify-end">
                 <button
@@ -950,7 +950,7 @@ const Withdraw = () => {
                     setShowReasonModal(false)
                     setSelectedReason('')
                   }}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 >
                   Close
                 </button>

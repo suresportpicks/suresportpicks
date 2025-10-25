@@ -134,38 +134,38 @@ const VerifyEmail = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 flex items-center justify-center p-4">
-      <div className="max-w-md w-full">
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 flex items-center justify-center p-3 sm:p-4 lg:p-6">
+      <div className="max-w-sm sm:max-w-md w-full">
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl p-6 sm:p-8">
           {/* Header */}
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="text-center mb-6 sm:mb-8">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+              <svg className="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Verify Your Email</h1>
-            <p className="text-gray-600">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Verify Your Email</h1>
+            <p className="text-sm sm:text-base text-gray-600">
               We've sent a 6-digit verification code to your email address
             </p>
           </div>
 
           {/* Error and Success Messages */}
           {error && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="mb-4 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-red-600 text-sm">{error}</p>
             </div>
           )}
           {success && (
-            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div className="mb-4 p-3 sm:p-4 bg-green-50 border border-green-200 rounded-lg">
               <p className="text-green-600 text-sm">{success}</p>
             </div>
           )}
 
-          <form onSubmit={handleVerifyEmail} className="space-y-6">
+          <form onSubmit={handleVerifyEmail} className="space-y-4 sm:space-y-6">
             {/* Email Input */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                 Email Address
               </label>
               <input
@@ -173,7 +173,7 @@ const VerifyEmail = () => {
                 id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
                 placeholder="Enter your email address"
                 required
               />
@@ -181,7 +181,7 @@ const VerifyEmail = () => {
 
             {/* OTP Input */}
             <div>
-              <label htmlFor="otpCode" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="otpCode" className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                 Verification Code
               </label>
               <input
@@ -189,12 +189,12 @@ const VerifyEmail = () => {
                 id="otpCode"
                 value={otpCode}
                 onChange={handleOtpChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-center text-2xl font-mono tracking-widest"
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-center text-lg sm:text-2xl font-mono tracking-widest"
                 placeholder="000000"
                 maxLength={6}
                 required
               />
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-xs sm:text-sm text-gray-500 mt-1">
                 Enter the 6-digit code sent to your email
               </p>
             </div>
@@ -203,11 +203,11 @@ const VerifyEmail = () => {
             <button
               type="submit"
               disabled={loading || !email || !otpCode || otpCode.length !== 6}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-2.5 sm:py-3 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
               {loading ? (
                 <div className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <svg className="animate-spin -ml-1 mr-3 h-4 w-4 sm:h-5 sm:w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
@@ -220,12 +220,12 @@ const VerifyEmail = () => {
           </form>
 
           {/* Resend Code */}
-          <div className="mt-6 text-center">
-            <p className="text-gray-600 mb-3">Didn't receive the code?</p>
+          <div className="mt-4 sm:mt-6 text-center">
+            <p className="text-sm sm:text-base text-gray-600 mb-2 sm:mb-3">Didn't receive the code?</p>
             <button
               onClick={handleResendCode}
               disabled={resendLoading || countdown > 0}
-              className="text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
               {resendLoading ? (
                 'Sending...'
@@ -238,10 +238,10 @@ const VerifyEmail = () => {
           </div>
 
           {/* Back to Login */}
-          <div className="mt-8 text-center">
+          <div className="mt-6 sm:mt-8 text-center">
             <button
               onClick={() => navigate('/login')}
-              className="text-gray-600 hover:text-gray-700 font-medium transition-colors duration-200"
+              className="text-gray-600 hover:text-gray-700 font-medium transition-colors duration-200 text-sm sm:text-base"
             >
               ← Back to Login
             </button>
@@ -249,8 +249,8 @@ const VerifyEmail = () => {
         </div>
 
         {/* Help Text */}
-        <div className="mt-6 text-center">
-          <p className="text-blue-100 text-sm">
+        <div className="mt-4 sm:mt-6 text-center">
+          <p className="text-blue-100 text-xs sm:text-sm">
             Check your spam folder if you don't see the email in your inbox
           </p>
         </div>
