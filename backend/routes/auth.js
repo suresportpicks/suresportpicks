@@ -5,6 +5,7 @@ const User = require('../models/User');
 const Referral = require('../models/Referral');
 const { generateToken, authenticateToken } = require('../middleware/auth');
 const { sendEmail } = require('../utils/email');
+const tempStorage = require('../utils/tempStorage');
 
 const router = express.Router();
 
@@ -50,12 +51,21 @@ router.post('/register', validateRegistration, async (req, res) => {
 
     const { name, email, password, referralCode } = req.body;
 
-    // Check if user already exists
+    // Check if user already exists in database
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({
         message: 'User already exists with this email',
         error: 'USER_EXISTS'
+      });
+    }
+
+    // Check if user is already in temporary storage (pending verification)
+    const existingTempUser = tempStorage.get(email);
+    if (existingTempUser) {
+      return res.status(400).json({
+        message: 'Registration already in progress. Please check your email for verification code or wait for it to expire.',
+        error: 'REGISTRATION_PENDING'
       });
     }
 
@@ -75,53 +85,38 @@ router.post('/register', validateRegistration, async (req, res) => {
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
     const otpExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
 
-    // Create new user (not verified yet)
-    const user = new User({
+    // Store user data temporarily (not in database yet)
+    const tempUserData = {
       name,
       email,
       password,
-      isActive: false, // User is inactive until email is verified
-      isEmailVerified: false,
-      emailVerificationToken: otpCode,
-      emailVerificationExpire: otpExpiry,
-      referredBy: referrer ? referrer._id : null
-    });
+      referredBy: referrer ? referrer._id : null,
+      referralCode: referralCode || null
+    };
 
-    await user.save();
-
-    // Create referral record if user was referred
-    if (referrer) {
-      const referralRecord = new Referral({
-        referrer: referrer._id,
-        referredUser: user._id,
-        status: 'pending', // Will be activated when user verifies email and makes first payment
-        earnings: 0,
-        earningsType: 'signup'
-      });
-      await referralRecord.save();
-    }
+    tempStorage.store(email, tempUserData, otpCode, otpExpiry);
 
     // Send verification email
     try {
       await sendEmail({
-        to: user.email,
+        to: email,
         template: 'emailVerification',
         data: {
-          name: user.name,
+          name: name,
           otpCode: otpCode,
-          verifyUrl: `${process.env.FRONTEND_URL}/verify-email?email=${encodeURIComponent(user.email)}`
+          verifyUrl: `${process.env.FRONTEND_URL}/verify-email?email=${encodeURIComponent(email)}`
         }
       });
 
       res.status(201).json({
-        message: 'Registration successful! Please check your email for verification code.',
+        message: 'Registration initiated! Please check your email for verification code.',
         requiresVerification: true,
-        email: user.email
+        email: email
       });
     } catch (emailError) {
       console.error('Verification email failed:', emailError);
-      // Delete user if email fails
-      await User.findByIdAndDelete(user._id);
+      // Remove from temp storage if email fails
+      tempStorage.remove(email);
       
       res.status(500).json({
         message: 'Registration failed. Could not send verification email.',
@@ -150,25 +145,59 @@ router.post('/verify-email', async (req, res) => {
       });
     }
 
-    // Find user with matching email and verification token
-    const user = await User.findOne({
-      email: email.toLowerCase(),
-      emailVerificationToken: otpCode,
-      emailVerificationExpire: { $gt: Date.now() }
-    });
+    // Check if user is already verified in database
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    if (existingUser) {
+      if (existingUser.isEmailVerified) {
+        return res.status(400).json({
+          message: 'Email is already verified. Please login.',
+          error: 'ALREADY_VERIFIED'
+        });
+      }
+    }
 
-    if (!user) {
+    // Verify OTP from temporary storage
+    const isValidOTP = tempStorage.verifyOTP(email.toLowerCase(), otpCode);
+    if (!isValidOTP) {
       return res.status(400).json({
         message: 'Invalid or expired verification code'
       });
     }
 
-    // Activate user and clear verification fields
-    user.isActive = true;
-    user.isEmailVerified = true;
-    user.emailVerificationToken = undefined;
-    user.emailVerificationExpire = undefined;
+    // Get user data from temporary storage
+    const tempUserData = tempStorage.get(email.toLowerCase());
+    if (!tempUserData) {
+      return res.status(400).json({
+        message: 'Registration session expired. Please register again.'
+      });
+    }
+
+    // Create user in database
+    const user = new User({
+      name: tempUserData.userData.name,
+      email: tempUserData.userData.email,
+      password: tempUserData.userData.password,
+      isActive: true,
+      isEmailVerified: true,
+      referredBy: tempUserData.userData.referredBy
+    });
+
     await user.save();
+
+    // Create referral record if user was referred
+    if (tempUserData.userData.referredBy) {
+      const referralRecord = new Referral({
+        referrer: tempUserData.userData.referredBy,
+        referredUser: user._id,
+        status: 'pending', // Will be activated when user makes first payment
+        earnings: 0,
+        earningsType: 'signup'
+      });
+      await referralRecord.save();
+    }
+
+    // Remove from temporary storage
+    tempStorage.remove(email.toLowerCase());
 
     // Generate token for immediate login
     const token = generateToken(user._id);
