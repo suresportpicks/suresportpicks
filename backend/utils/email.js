@@ -1,51 +1,25 @@
-const nodemailer = require('nodemailer');
-const axios = require('axios');
+const { Resend } = require('resend');
 
-// Create transporter
-const createTransporter = () => {
-  // Use Brevo (formerly Sendinblue) for production, fallback for development
-  const isProduction = process.env.NODE_ENV === 'production';
+// Initialize Resend with API key
+if (!process.env.RESEND_API_KEY) {
+  console.error('❌ RESEND_API_KEY environment variable is required');
+  throw new Error('RESEND_API_KEY environment variable is required for email functionality');
+}
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Email configuration
+const getEmailConfig = () => {
+  const emailFrom = process.env.EMAIL_FROM;
+  const replyTo = process.env.EMAIL_REPLY_TO;
   
-  if (isProduction && process.env.BREVO_SMTP_KEY) {
-    // Brevo SMTP configuration
-    return nodemailer.createTransport({
-      host: 'smtp-relay.brevo.com',
-      port: 587,
-      secure: false, // STARTTLS
-      auth: {
-        user: process.env.BREVO_SMTP_USER || process.env.EMAIL_USER,
-        pass: process.env.BREVO_SMTP_KEY
-      },
-      tls: {
-        rejectUnauthorized: false
-      }
-    });
-  } else {
-    // Fallback configuration for development or custom SMTP
-    const port = parseInt(process.env.EMAIL_PORT) || 587;
-    const isSecure = port === 465; // Use SSL for port 465
-    
-    return nodemailer.createTransport({
-      host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-      port: port,
-      secure: isSecure, // true for 465 (SSL), false for other ports (STARTTLS)
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      },
-      tls: {
-        rejectUnauthorized: false,
-        // Additional TLS options for better compatibility
-        ciphers: 'SSLv3'
-      },
-      // Connection timeout and socket timeout
-      connectionTimeout: 60000,
-      socketTimeout: 60000,
-      // Enable debug logging in development
-      debug: process.env.NODE_ENV === 'development',
-      logger: process.env.NODE_ENV === 'development'
-    });
+  if (!emailFrom) {
+    console.warn('⚠️ EMAIL_FROM environment variable not set, using default');
   }
+  
+  return {
+    from: emailFrom || 'SureSport Picks <noreply@suresportpicks.com>',
+    replyTo: replyTo || 'info@suresportpicks.com'
+  };
 };
 
 // Email templates
@@ -309,7 +283,7 @@ const emailTemplates = {
   })
 };
 
-// Main send email function
+// Main send email function using Resend
 const sendEmail = async ({ to, subject, template, data, html, text }) => {
   try {
     let emailContent;
@@ -320,80 +294,34 @@ const sendEmail = async ({ to, subject, template, data, html, text }) => {
       emailContent = { subject, html, text };
     }
 
-    // Use MailerSend for OTP emails when configured
-    if (template === 'emailVerification' && process.env.MAILERSEND_API_KEY) {
-      return await sendWithMailerSend({
-        to,
-        subject: emailContent.subject,
-        html: emailContent.html,
-        text: emailContent.text
-      });
-    }
+    const emailConfig = getEmailConfig();
 
-    const transporter = createTransporter();
-
-    const mailOptions = {
-      from: `"SureSport Picks" <${process.env.EMAIL_FROM || process.env.EMAIL_USER}>`,
-      to,
+    const emailData = {
+      from: emailConfig.from,
+      to: Array.isArray(to) ? to : [to],
       subject: emailContent.subject,
       html: emailContent.html,
-      text: emailContent.text
+      text: emailContent.text,
+      reply_to: emailConfig.replyTo
     };
 
-    const result = await transporter.sendMail(mailOptions);
+    const result = await resend.emails.send(emailData);
     
-    console.log('✅ Email sent successfully:', {
-      to,
+    console.log('✅ Email sent successfully with Resend:', {
+      to: emailData.to,
       subject: emailContent.subject,
-      messageId: result.messageId
+      messageId: result.data?.id
     });
 
     return {
       success: true,
-      messageId: result.messageId
+      messageId: result.data?.id,
+      data: result.data
     };
   } catch (error) {
-    console.error('❌ Email send error:', error);
-    throw new Error(`Failed to send email: ${error.message}`);
+    console.error('❌ Resend email send error:', error);
+    throw new Error(`Failed to send email via Resend: ${error.message}`);
   }
-};
-
-// Send via MailerSend (used for OTP emails)
-const sendWithMailerSend = async ({ to, subject, html, text }) => {
-  const apiKey = process.env.MAILERSEND_API_KEY;
-  const senderEmail = process.env.MAILERSEND_SENDER_EMAIL || process.env.EMAIL_FROM || process.env.EMAIL_USER;
-  const senderName = process.env.MAILERSEND_SENDER_NAME || 'SureSport Picks';
-
-  if (!apiKey || !senderEmail) {
-    throw new Error('MailerSend configuration missing (MAILERSEND_API_KEY or MAILERSEND_SENDER_EMAIL)');
-  }
-
-  const payload = {
-    from: { email: senderEmail, name: senderName },
-    to: [{ email: to }],
-    subject,
-    html,
-    text
-  };
-
-  const res = await axios.post('https://api.mailersend.com/v1/email', payload, {
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json'
-    },
-    timeout: 15000
-  });
-
-  console.log('✅ MailerSend email sent:', {
-    to,
-    subject,
-    messageId: res.data?.message_id || res.data?.id
-  });
-
-  return {
-    success: true,
-    messageId: res.data?.message_id || res.data?.id
-  };
 };
 
 // Send payment notification to admin
@@ -414,15 +342,23 @@ const sendContactNotification = async (contactData) => {
   });
 };
 
-// Test email configuration
+// Test email configuration with Resend
 const testEmailConfig = async () => {
   try {
-    const transporter = createTransporter();
-    await transporter.verify();
-    console.log('✅ Email configuration is valid');
+    // Test by sending a simple test email to verify Resend configuration
+    const testResult = await resend.emails.send({
+      from: getEmailConfig().from,
+      to: ['test@resend.dev'], // Resend test email
+      subject: 'SureSport Picks - Email Configuration Test',
+      html: '<p>This is a test email to verify Resend configuration.</p>',
+      text: 'This is a test email to verify Resend configuration.'
+    });
+    
+    console.log('✅ Resend email configuration is valid');
+    console.log('Test email ID:', testResult.data?.id);
     return true;
   } catch (error) {
-    console.error('❌ Email configuration error:', error);
+    console.error('❌ Resend email configuration error:', error);
     return false;
   }
 };
