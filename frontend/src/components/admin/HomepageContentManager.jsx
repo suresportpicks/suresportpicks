@@ -7,6 +7,8 @@ import {
 } from 'lucide-react'
 import axios from 'axios'
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
+
 const HomepageContentManager = () => {
   const { token } = useAuth()
   const [content, setContent] = useState(null)
@@ -21,7 +23,7 @@ const HomepageContentManager = () => {
 
   const fetchContent = async () => {
     try {
-      const response = await axios.get('/api/homepage/content')
+      const response = await axios.get(`${API_BASE}/homepage/content`)
       setContent(response.data)
     } catch (error) {
       console.error('Error fetching content:', error)
@@ -34,7 +36,7 @@ const HomepageContentManager = () => {
   const saveContent = async () => {
     setSaving(true)
     try {
-      await axios.put('/api/homepage/content', content, {
+      await axios.put(`${API_BASE}/homepage/content`, content, {
         headers: { Authorization: `Bearer ${token}` }
       })
       setMessage({ type: 'success', text: 'Content updated successfully!' })

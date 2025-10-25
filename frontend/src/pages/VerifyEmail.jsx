@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+
 const VerifyEmail = () => {
   const [otpCode, setOtpCode] = useState('');
   const [email, setEmail] = useState('');
@@ -47,7 +49,7 @@ const VerifyEmail = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/auth/verify-email', {
+      const response = await fetch(`${API_BASE}/auth/verify-email`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -96,7 +98,7 @@ const VerifyEmail = () => {
     setResendLoading(true);
 
     try {
-      const response = await fetch('/api/auth/resend-verification', {
+      const response = await fetch(`${API_BASE}/auth/resend-verification`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

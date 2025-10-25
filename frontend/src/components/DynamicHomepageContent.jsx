@@ -6,6 +6,8 @@ import {
 } from 'lucide-react'
 import axios from 'axios'
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
+
 const DynamicHomepageContent = () => {
   const [content, setContent] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -16,7 +18,7 @@ const DynamicHomepageContent = () => {
 
   const fetchHomepageContent = async () => {
     try {
-      const response = await axios.get('/api/homepage/content')
+      const response = await axios.get(`${API_BASE}/homepage/content`)
       setContent(response.data)
     } catch (error) {
       console.error('Error fetching homepage content:', error)

@@ -4,6 +4,8 @@ import { Send, CheckCircle, AlertCircle, User, Mail, Phone, MessageSquare } from
 import axios from 'axios'
 import AnimatedBackground from './AnimatedBackground'
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
+
 const ContactForm = () => {
   const [formData, setFormData] = useState({
     firstName: '',
@@ -35,7 +37,7 @@ const ContactForm = () => {
     setSubmitStatus(null)
 
     try {
-      await axios.post('/api/homepage/contact', formData)
+      await axios.post(`${API_BASE}/homepage/contact`, formData)
       setSubmitStatus('success')
       setFormData({
         firstName: '',

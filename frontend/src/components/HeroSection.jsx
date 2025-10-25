@@ -5,6 +5,8 @@ import AnimatedBackground from './AnimatedBackground'
 import basketballHeroVideo from '../assets/videos/basketball-hero.mp4'
 import axios from 'axios'
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
+
 const HeroSection = () => {
   const [isVideoLoaded, setIsVideoLoaded] = useState(false)
   const [useFallback, setUseFallback] = useState(false)
@@ -30,7 +32,7 @@ const HeroSection = () => {
 
   const fetchHeroContent = async () => {
     try {
-      const response = await axios.get('/api/homepage/content')
+      const response = await axios.get(`${API_BASE}/homepage/content`)
       if (response.data?.hero) {
         setHeroContent(response.data.hero)
       }

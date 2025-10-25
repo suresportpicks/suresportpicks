@@ -8,6 +8,8 @@ import {
 } from 'lucide-react'
 import axios from 'axios'
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
+
 const ContactInquiriesManager = () => {
   const { token } = useAuth()
   const [inquiries, setInquiries] = useState([])
@@ -26,7 +28,7 @@ const ContactInquiriesManager = () => {
 
   const fetchInquiries = async () => {
     try {
-      const response = await axios.get('/api/homepage/inquiries', {
+      const response = await axios.get(`${API_BASE}/homepage/inquiries`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       setInquiries(response.data)
