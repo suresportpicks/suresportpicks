@@ -59,7 +59,7 @@ const withdrawalRequestSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'imf_required', 'vat_pending', 'vat_submitted', 'bot_pending', 'bot_submitted', 'approved', 'rejected', 'processing', 'completed'],
+    enum: ['pending', 'imf_required', 'vat_pending', 'vat_rejected', 'bot_required', 'bot_pending', 'bot_rejected', 'approved', 'rejected', 'processing', 'completed'],
     default: 'imf_required'
   },
   // Verification codes
@@ -81,6 +81,18 @@ const withdrawalRequestSchema = new mongoose.Schema({
     adminConfirmedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User'
+    },
+    rejectedAt: {
+      type: Date
+    },
+    rejectedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    rejectionReason: {
+      type: String,
+      trim: true,
+      maxlength: [500, 'VAT rejection reason cannot exceed 500 characters']
     }
   },
   botCode: {
@@ -101,6 +113,18 @@ const withdrawalRequestSchema = new mongoose.Schema({
     adminConfirmedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User'
+    },
+    rejectedAt: {
+      type: Date
+    },
+    rejectedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    rejectionReason: {
+      type: String,
+      trim: true,
+      maxlength: [500, 'BOT rejection reason cannot exceed 500 characters']
     }
   },
   requestedAt: {

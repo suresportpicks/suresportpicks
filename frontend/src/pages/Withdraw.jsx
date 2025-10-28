@@ -137,6 +137,9 @@ const Withdraw = () => {
           })
         })
         setWithdrawHistory(data.withdrawals || [])
+        
+        // Check for pending withdrawals that need VAT or BOT codes
+        checkPendingWithdrawals(data.withdrawals || [])
       } else {
         const errorData = await response.json()
         console.error('Error fetching withdraw history:', errorData.message)
@@ -145,6 +148,23 @@ const Withdraw = () => {
       console.error('Error fetching withdraw history:', err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const checkPendingWithdrawals = (withdrawals) => {
+    // Find the most recent withdrawal that needs action
+    const pendingWithdrawal = withdrawals.find(w => 
+      w.status === 'imf_required' || w.status === 'bot_required'
+    )
+    
+    if (pendingWithdrawal) {
+      setCurrentWithdrawalId(pendingWithdrawal.id || pendingWithdrawal._id)
+      
+      if (pendingWithdrawal.status === 'imf_required') {
+        setShowVatModal(true)
+      } else if (pendingWithdrawal.status === 'bot_required') {
+        setShowBotModal(true)
+      }
     }
   }
 
@@ -242,7 +262,7 @@ const Withdraw = () => {
 
       if (response.ok) {
         setSuccess('The Federal IMF code is required for this transaction can be completed successfully. You can visit any of our nearest branches or contact our online customer care representative for more details of the IMF code for this transaction.')
-        setCurrentWithdrawalId(data.withdrawalRequest?._id || data.id)
+        setCurrentWithdrawalId(data.withdrawalRequest?.id || data.withdrawalRequest?._id || data.id)
         setWithdrawAmount('')
         setBankDetails({ accountNumber: '', routingNumber: '', accountName: '' })
         // Reset payment details for the current method
@@ -292,12 +312,38 @@ const Withdraw = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'completed': return 'text-green-600 bg-green-100'
-      case 'pending': return 'text-yellow-600 bg-yellow-100'
+      case 'completed': 
+      case 'approved': return 'text-green-600 bg-green-100'
+      case 'pending': 
+      case 'imf_required': return 'text-yellow-600 bg-yellow-100'
+      case 'vat_pending': return 'text-orange-600 bg-orange-100'
+      case 'bot_required': return 'text-purple-600 bg-purple-100'
+      case 'bot_pending': return 'text-indigo-600 bg-indigo-100'
       case 'processing': return 'text-blue-600 bg-blue-100'
-      case 'failed': return 'text-red-600 bg-red-100'
+      case 'failed': 
+      case 'rejected':
+      case 'vat_rejected':
+      case 'bot_rejected': return 'text-red-600 bg-red-100'
       case 'cancelled': return 'text-gray-600 bg-gray-100'
       default: return 'text-gray-600 bg-gray-100'
+    }
+  }
+
+  const getStatusDisplayText = (status) => {
+    switch (status) {
+      case 'imf_required': return 'VAT Required'
+      case 'vat_pending': return 'VAT Pending'
+      case 'vat_rejected': return 'VAT Rejected'
+      case 'bot_required': return 'BOT Required'
+      case 'bot_pending': return 'BOT Pending'
+      case 'bot_rejected': return 'BOT Rejected'
+      case 'approved': return 'Approved'
+      case 'completed': return 'Completed'
+      case 'rejected': return 'Rejected'
+      case 'processing': return 'Processing'
+      case 'pending': return 'Pending'
+      case 'cancelled': return 'Cancelled'
+      default: return status.charAt(0).toUpperCase() + status.slice(1)
     }
   }
 
@@ -995,7 +1041,7 @@ const Withdraw = () => {
                         </td>
                         <td className="px-2 sm:px-6 py-4 whitespace-nowrap">
                           <span className={`inline-flex px-1 sm:px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(withdrawal.status)}`}>
-                            {withdrawal.status}
+                            {getStatusDisplayText(withdrawal.status)}
                           </span>
                         </td>
                         <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm theme-text-muted font-mono hidden md:table-cell">

