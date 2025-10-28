@@ -1777,7 +1777,7 @@ function AdminPanel() {
                       </div>
                     )}
 
-                    {selectedWithdrawal.status === 'imf_required' && (
+                    {(selectedWithdrawal.status === 'imf_required' || selectedWithdrawal.status === 'vat_pending') && (
                       <div className="space-y-3">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Generate Admin VAT Code</label>

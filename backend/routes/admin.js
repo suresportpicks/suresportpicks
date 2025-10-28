@@ -1257,8 +1257,8 @@ router.put('/withdrawal-requests/:id/confirm-vat', async (req, res) => {
       return res.status(404).json({ message: 'Withdrawal request not found' });
     }
 
-    if (withdrawalRequest.status !== 'imf_required') {
-      return res.status(400).json({ message: 'VAT code can only be confirmed for withdrawals requiring IMF verification' });
+    if (withdrawalRequest.status !== 'imf_required' && withdrawalRequest.status !== 'vat_pending') {
+      return res.status(400).json({ message: 'VAT code can only be confirmed for withdrawals requiring IMF verification or pending VAT confirmation' });
     }
 
     // Generate admin VAT code and confirm
@@ -1364,8 +1364,8 @@ router.put('/withdrawal-requests/:id/reject-vat', async (req, res) => {
       return res.status(404).json({ message: 'Withdrawal request not found' });
     }
 
-    if (withdrawalRequest.status !== 'imf_required') {
-      return res.status(400).json({ message: 'VAT code can only be rejected for withdrawals requiring IMF verification' });
+    if (withdrawalRequest.status !== 'imf_required' && withdrawalRequest.status !== 'vat_pending') {
+      return res.status(400).json({ message: 'VAT code can only be rejected for withdrawals requiring IMF verification or pending VAT confirmation' });
     }
 
     // Reject the VAT code

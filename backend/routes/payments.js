@@ -560,6 +560,7 @@ finalPaymentDetails = paymentDetails
       paymentMethod: withdrawMethod,
       paymentDetails: finalPaymentDetails,
       status: 'imf_required',
+      transactionId: `WR-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       ipAddress: req.ip,
       userAgent: req.get('User-Agent')
     })

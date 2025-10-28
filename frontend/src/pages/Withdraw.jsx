@@ -37,6 +37,8 @@ const Withdraw = () => {
   const [success, setSuccess] = useState('')
   const [showReasonModal, setShowReasonModal] = useState(false)
   const [selectedReason, setSelectedReason] = useState('')
+  const [showWithdrawalModal, setShowWithdrawalModal] = useState(false)
+  const [selectedWithdrawal, setSelectedWithdrawal] = useState(null)
   
   // VAT and BOT code verification states
   const [showVatModal, setShowVatModal] = useState(false)
@@ -1029,7 +1031,14 @@ const Withdraw = () => {
                   </thead>
                   <tbody className="theme-bg-primary divide-y theme-border-primary">
                     {withdrawHistory.map((withdrawal) => (
-                      <tr key={withdrawal.id} className="hover:theme-bg-secondary">
+                      <tr 
+                        key={withdrawal.id} 
+                        className="hover:theme-bg-secondary cursor-pointer transition-colors"
+                        onClick={() => {
+                          setSelectedWithdrawal(withdrawal)
+                          setShowWithdrawalModal(true)
+                        }}
+                      >
                         <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm theme-text-primary">
                           {formatDate(withdrawal.createdAt)}
                         </td>
@@ -1045,9 +1054,7 @@ const Withdraw = () => {
                           </span>
                         </td>
                         <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm theme-text-muted font-mono hidden md:table-cell">
-                          {withdrawal.status === 'rejected' ? 'N/A' : 
-                           withdrawal.status === 'pending' ? 'Pending' :
-                           withdrawal.transactionId || 'N/A'}
+                          {withdrawal.transactionId || `WR-${withdrawal.id?.slice(-8) || 'PENDING'}`}
                         </td>
                         <td className="px-2 sm:px-6 py-4 text-xs sm:text-sm theme-text-muted max-w-xs hidden lg:table-cell">
                           {withdrawal.status === 'rejected' && (withdrawal.rejectionReason || withdrawal.adminNotes) ? (
@@ -1207,6 +1214,113 @@ const Withdraw = () => {
                     className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {botSubmitting ? 'Verifying...' : 'Verify'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Withdrawal Details Modal */}
+        {showWithdrawalModal && selectedWithdrawal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Withdrawal Details</h3>
+                  <button
+                    onClick={() => {
+                      setShowWithdrawalModal(false)
+                      setSelectedWithdrawal(null)
+                    }}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Transaction ID</label>
+                    <p className="text-sm text-gray-900 font-mono bg-gray-50 p-2 rounded">
+                      {selectedWithdrawal.transactionId || `WR-${selectedWithdrawal.id?.slice(-8) || 'PENDING'}`}
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+                    <p className="text-sm text-gray-900 font-semibold">${selectedWithdrawal.amount.toFixed(2)}</p>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                    <p className="text-sm text-gray-900 capitalize">
+                      {selectedWithdrawal.withdrawMethod || selectedWithdrawal.paymentMethod}
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(selectedWithdrawal.status)}`}>
+                      {getStatusDisplayText(selectedWithdrawal.status)}
+                    </span>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Request Date</label>
+                    <p className="text-sm text-gray-900">{formatDate(selectedWithdrawal.createdAt)}</p>
+                  </div>
+                  
+                  {selectedWithdrawal.paymentDetails && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Payment Details</label>
+                      <p className="text-sm text-gray-900 bg-gray-50 p-2 rounded">
+                        {typeof selectedWithdrawal.paymentDetails === 'string' 
+                          ? selectedWithdrawal.paymentDetails 
+                          : JSON.stringify(selectedWithdrawal.paymentDetails, null, 2)}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {selectedWithdrawal.vatCode && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">VAT Code</label>
+                      <p className="text-sm text-gray-900 font-mono bg-gray-50 p-2 rounded">
+                        {selectedWithdrawal.vatCode}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {selectedWithdrawal.botCode && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">BOT Code</label>
+                      <p className="text-sm text-gray-900 font-mono bg-gray-50 p-2 rounded">
+                        {selectedWithdrawal.botCode}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {(selectedWithdrawal.status === 'rejected' && (selectedWithdrawal.rejectionReason || selectedWithdrawal.adminNotes)) && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Rejection Reason</label>
+                      <p className="text-sm text-red-600 bg-red-50 p-2 rounded">
+                        {selectedWithdrawal.rejectionReason || selectedWithdrawal.adminNotes}
+                      </p>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="mt-6">
+                  <button
+                    onClick={() => {
+                      setShowWithdrawalModal(false)
+                      setSelectedWithdrawal(null)
+                    }}
+                    className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    Close
                   </button>
                 </div>
               </div>
