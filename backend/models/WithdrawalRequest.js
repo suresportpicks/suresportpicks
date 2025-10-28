@@ -71,6 +71,13 @@ const withdrawalRequestSchema = new mongoose.Schema({
     submittedAt: {
       type: Date
     },
+    userSubmitted: {
+      type: String,
+      trim: true
+    },
+    userSubmittedAt: {
+      type: Date
+    },
     adminGenerated: {
       type: String,
       trim: true
@@ -101,6 +108,13 @@ const withdrawalRequestSchema = new mongoose.Schema({
       trim: true
     },
     submittedAt: {
+      type: Date
+    },
+    userSubmitted: {
+      type: String,
+      trim: true
+    },
+    userSubmittedAt: {
       type: Date
     },
     adminGenerated: {

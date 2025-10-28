@@ -901,6 +901,62 @@ function AdminPanel() {
     }
   }
 
+  // Approve User-Submitted VAT Code
+  async function approveUserVatCode(id) {
+    const withdrawal = selectedWithdrawal
+    if (!withdrawal?.vatCode?.userSubmitted) {
+      setError('No user-submitted VAT code found')
+      return
+    }
+
+    try {
+      setIsConfirmingVat(true)
+      const res = await fetch(`${API_BASE}/admin/withdrawal-requests/${id}/confirm-vat`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify({ vatCode: withdrawal.vatCode.userSubmitted })
+      })
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data?.message || 'Failed to approve VAT code')
+
+      // Update the withdrawal in the list
+      setWithdrawalRequests(prev => prev.map(w => 
+        w.id === id ? { 
+          ...w, 
+          status: 'bot_required',
+          vatCode: {
+            ...w.vatCode,
+            adminGenerated: withdrawal.vatCode.userSubmitted,
+            adminConfirmedAt: new Date(),
+            adminConfirmedBy: user._id
+          }
+        } : w
+      ))
+
+      // Update selected withdrawal
+      setSelectedWithdrawal(prev => ({
+        ...prev,
+        status: 'bot_required',
+        vatCode: {
+          ...prev.vatCode,
+          adminGenerated: withdrawal.vatCode.userSubmitted,
+          adminConfirmedAt: new Date(),
+          adminConfirmedBy: user._id
+        }
+      }))
+      
+      setSuccess('User-submitted VAT code approved successfully. BOT code is now required.')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setIsConfirmingVat(false)
+    }
+  }
+
   // VAT Code Rejection
   async function rejectVatCode(id) {
     if (!vatRejectionReason.trim()) {
@@ -1072,6 +1128,72 @@ function AdminPanel() {
       setTransactionId('')
       setAdminNotes('')
       setSuccess('BOT code confirmed and withdrawal approved successfully')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setIsConfirmingBot(false)
+    }
+  }
+
+  // Approve User-Submitted BOT Code
+  async function approveUserBotCode(id) {
+    const withdrawal = selectedWithdrawal
+    if (!withdrawal?.botCode?.userSubmitted) {
+      setError('No user-submitted BOT code found')
+      return
+    }
+
+    try {
+      setIsConfirmingBot(true)
+      const res = await fetch(`${API_BASE}/admin/withdrawal-requests/${id}/confirm-bot`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify({ 
+          botCode: withdrawal.botCode.userSubmitted,
+          transactionId: transactionId.trim() || undefined,
+          adminNotes: adminNotes.trim() || undefined
+        })
+      })
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data?.message || 'Failed to approve BOT code')
+
+      // Update the withdrawal in the list
+      setWithdrawalRequests(prev => prev.map(w => 
+        w.id === id ? { 
+          ...w, 
+          status: 'approved',
+          botCode: {
+            ...w.botCode,
+            adminGenerated: withdrawal.botCode.userSubmitted,
+            adminConfirmedAt: new Date(),
+            adminConfirmedBy: user._id
+          },
+          processedBy: user._id,
+          processedAt: new Date()
+        } : w
+      ))
+
+      // Update selected withdrawal
+      setSelectedWithdrawal(prev => ({
+        ...prev,
+        status: 'approved',
+        botCode: {
+          ...prev.botCode,
+          adminGenerated: withdrawal.botCode.userSubmitted,
+          adminConfirmedAt: new Date(),
+          adminConfirmedBy: user._id
+        },
+        processedBy: user._id,
+        processedAt: new Date()
+      }))
+      
+      setTransactionId('')
+      setAdminNotes('')
+      setSuccess('User-submitted BOT code approved and withdrawal approved successfully')
     } catch (err) {
       setError(err.message)
     } finally {
@@ -1774,6 +1896,18 @@ function AdminPanel() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">User Submitted VAT Code</label>
                         <p className="text-sm text-gray-900 bg-blue-50 p-3 rounded-md font-mono">{selectedWithdrawal.vatCode.userSubmitted}</p>
                         <p className="text-xs text-gray-500 mt-1">Submitted: {new Date(selectedWithdrawal.vatCode.userSubmittedAt).toLocaleString()}</p>
+                        
+                        {(selectedWithdrawal.status === 'vat_pending') && (
+                          <div className="mt-2">
+                            <button
+                              onClick={() => approveUserVatCode(selectedWithdrawal.id)}
+                              disabled={isConfirmingVat}
+                              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 mr-2"
+                            >
+                              {isConfirmingVat ? 'Approving...' : 'Approve User VAT Code'}
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -1853,10 +1987,22 @@ function AdminPanel() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">User Submitted BOT Code</label>
                         <p className="text-sm text-gray-900 bg-blue-50 p-3 rounded-md font-mono">{selectedWithdrawal.botCode.userSubmitted}</p>
                         <p className="text-xs text-gray-500 mt-1">Submitted: {new Date(selectedWithdrawal.botCode.userSubmittedAt).toLocaleString()}</p>
+                        
+                        {(selectedWithdrawal.status === 'bot_pending' || selectedWithdrawal.status === 'bot_submitted') && (
+                          <div className="mt-2">
+                            <button
+                              onClick={() => approveUserBotCode(selectedWithdrawal.id)}
+                              disabled={isConfirmingBot}
+                              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 mr-2"
+                            >
+                              {isConfirmingBot ? 'Approving...' : 'Approve User BOT Code'}
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
 
-                    {selectedWithdrawal.status === 'bot_required' && (
+                    {(selectedWithdrawal.status === 'bot_required' || selectedWithdrawal.status === 'bot_pending' || selectedWithdrawal.status === 'bot_submitted') && (
                       <div className="space-y-3">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Generate Admin BOT Code</label>

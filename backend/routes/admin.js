@@ -1298,8 +1298,8 @@ router.put('/withdrawal-requests/:id/confirm-bot', async (req, res) => {
       return res.status(404).json({ message: 'Withdrawal request not found' });
     }
 
-    if (withdrawalRequest.status !== 'bot_required') {
-      return res.status(400).json({ message: 'BOT code can only be confirmed for withdrawals requiring BOT verification' });
+    if (!['bot_required', 'bot_pending', 'bot_submitted'].includes(withdrawalRequest.status)) {
+      return res.status(400).json({ message: 'BOT code can only be confirmed for withdrawals requiring BOT verification or with pending BOT codes' });
     }
 
     // Check if user has sufficient balance
@@ -1405,8 +1405,8 @@ router.put('/withdrawal-requests/:id/reject-bot', async (req, res) => {
       return res.status(404).json({ message: 'Withdrawal request not found' });
     }
 
-    if (withdrawalRequest.status !== 'bot_required') {
-      return res.status(400).json({ message: 'BOT code can only be rejected for withdrawals requiring BOT verification' });
+    if (!['bot_required', 'bot_pending', 'bot_submitted'].includes(withdrawalRequest.status)) {
+      return res.status(400).json({ message: 'BOT code can only be rejected for withdrawals requiring BOT verification or with pending BOT codes' });
     }
 
     // Reject the BOT code

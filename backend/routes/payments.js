@@ -773,8 +773,9 @@ router.post('/withdrawal/:id/vat-code', authenticateToken, async (req, res) => {
 
     // Update withdrawal with VAT code
     withdrawalRequest.vatCode = {
-      code: vatCode.trim(),
-      submittedAt: new Date()
+      ...withdrawalRequest.vatCode,
+      userSubmitted: vatCode.trim(),
+      userSubmittedAt: new Date()
     };
     withdrawalRequest.status = 'vat_pending';
     
@@ -819,8 +820,9 @@ router.post('/withdrawal/:id/bot-code', authenticateToken, async (req, res) => {
 
     // Update withdrawal with BOT code
     withdrawalRequest.botCode = {
-      code: botCode.trim(),
-      submittedAt: new Date()
+      ...withdrawalRequest.botCode,
+      userSubmitted: botCode.trim(),
+      userSubmittedAt: new Date()
     };
     withdrawalRequest.status = 'bot_pending';
     
