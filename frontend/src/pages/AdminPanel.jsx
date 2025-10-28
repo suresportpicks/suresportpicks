@@ -1887,95 +1887,92 @@ function AdminPanel() {
                 )}
 
                 {/* VAT Code Section */}
-                {(selectedWithdrawal.status === 'imf_required' || selectedWithdrawal.status === 'vat_pending' || selectedWithdrawal.status === 'bot_required' || selectedWithdrawal.status === 'bot_pending' || selectedWithdrawal.status === 'bot_submitted' || selectedWithdrawal.status === 'approved' || selectedWithdrawal.status === 'vat_rejected' || selectedWithdrawal.status === 'bot_rejected') && (
-                  <div className="border-t pt-4">
-                    <h4 className="text-md font-semibold text-gray-900 mb-3">VAT Code Verification</h4>
-                    
-                    {selectedWithdrawal.vatCode?.userSubmitted && (
-                      <div className="mb-3">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">User Submitted VAT Code</label>
-                        <p className="text-sm text-gray-900 bg-blue-50 p-3 rounded-md font-mono">{selectedWithdrawal.vatCode.userSubmitted}</p>
-                        <p className="text-xs text-gray-500 mt-1">Submitted: {new Date(selectedWithdrawal.vatCode.userSubmittedAt).toLocaleString()}</p>
-                        
-                        {(selectedWithdrawal.status === 'vat_pending') && (
-                          <div className="mt-2">
-                            <button
-                              onClick={() => approveUserVatCode(selectedWithdrawal.id)}
-                              disabled={isConfirmingVat}
-                              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 mr-2"
-                            >
-                              {isConfirmingVat ? 'Approving...' : 'Approve User VAT Code'}
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {(selectedWithdrawal.status === 'imf_required' || selectedWithdrawal.status === 'vat_pending') && (
-                      <div className="space-y-3">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Generate Admin VAT Code</label>
-                          <input
-                            type="text"
-                            value={vatCode}
-                            onChange={(e) => setVatCode(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="Enter VAT code to confirm..."
-                          />
-                        </div>
-                        <div className="flex space-x-3">
+                <div className="border-t pt-4">
+                  <h4 className="text-md font-semibold text-gray-900 mb-3">VAT Code Verification</h4>
+                  {selectedWithdrawal.vatCode?.userSubmitted && (
+                    <div className="mb-3">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">User Submitted VAT Code</label>
+                      <p className="text-sm text-gray-900 bg-blue-50 p-3 rounded-md font-mono">{selectedWithdrawal.vatCode.userSubmitted}</p>
+                      <p className="text-xs text-gray-500 mt-1">Submitted: {new Date(selectedWithdrawal.vatCode.userSubmittedAt).toLocaleString()}</p>
+                    </div>
+                  )}
+                  {(selectedWithdrawal.status === 'imf_required' || selectedWithdrawal.status === 'vat_pending' || selectedWithdrawal.status === 'bot_required' || selectedWithdrawal.status === 'bot_pending' || selectedWithdrawal.status === 'bot_submitted' || selectedWithdrawal.status === 'approved' || selectedWithdrawal.status === 'vat_rejected' || selectedWithdrawal.status === 'bot_rejected') && (
+                    <>
+                      {/* VAT actions, admin code, rejection, etc. */}
+                      {(selectedWithdrawal.status === 'vat_pending') && (
+                        <div className="mt-2">
                           <button
-                            onClick={() => confirmVatCode(selectedWithdrawal.id)}
-                            disabled={!vatCode.trim() || isConfirmingVat}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                            onClick={() => approveUserVatCode(selectedWithdrawal.id)}
+                            disabled={isConfirmingVat}
+                            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 mr-2"
                           >
-                            {isConfirmingVat ? 'Confirming...' : 'Confirm VAT Code'}
+                            {isConfirmingVat ? 'Approving...' : 'Approve User VAT Code'}
                           </button>
                         </div>
-                        
-                        <div className="border-t pt-3 mt-4">
-                          <h5 className="text-sm font-medium text-gray-700 mb-2">Or Reject VAT Code</h5>
+                      )}
+                      {(selectedWithdrawal.status === 'imf_required' || selectedWithdrawal.status === 'vat_pending') && (
+                        <div className="space-y-3">
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Rejection Reason</label>
-                            <textarea
-                              value={vatRejectionReason}
-                              onChange={(e) => setVatRejectionReason(e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                              placeholder="Enter reason for rejecting VAT code..."
-                              rows="3"
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Generate Admin VAT Code</label>
+                            <input
+                              type="text"
+                              value={vatCode}
+                              onChange={(e) => setVatCode(e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              placeholder="Enter VAT code to confirm..."
                             />
                           </div>
-                          <button
-                            onClick={() => rejectVatCode(selectedWithdrawal.id)}
-                            disabled={!vatRejectionReason.trim() || isRejectingVat}
-                            className="mt-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
-                          >
-                            {isRejectingVat ? 'Rejecting...' : 'Reject VAT Code'}
-                          </button>
+                          <div className="flex space-x-3">
+                            <button
+                              onClick={() => confirmVatCode(selectedWithdrawal.id)}
+                              disabled={!vatCode.trim() || isConfirmingVat}
+                              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                            >
+                              {isConfirmingVat ? 'Confirming...' : 'Confirm VAT Code'}
+                            </button>
+                          </div>
+                          <div className="border-t pt-3 mt-4">
+                            <h5 className="text-sm font-medium text-gray-700 mb-2">Or Reject VAT Code</h5>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Rejection Reason</label>
+                              <textarea
+                                value={vatRejectionReason}
+                                onChange={(e) => setVatRejectionReason(e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                                placeholder="Enter reason for rejecting VAT code..."
+                                rows="3"
+                              />
+                            </div>
+                            <button
+                              onClick={() => rejectVatCode(selectedWithdrawal.id)}
+                              disabled={!vatRejectionReason.trim() || isRejectingVat}
+                              className="mt-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+                            >
+                              {isRejectingVat ? 'Rejecting...' : 'Reject VAT Code'}
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    )}
-
-                    {selectedWithdrawal.vatCode?.adminGenerated && (
-                      <div className="mb-3">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Admin Generated VAT Code</label>
-                        <p className="text-sm text-green-900 bg-green-50 p-3 rounded-md font-mono">{selectedWithdrawal.vatCode.adminGenerated}</p>
-                        <p className="text-xs text-gray-500 mt-1">Confirmed: {new Date(selectedWithdrawal.vatCode.adminConfirmedAt).toLocaleString()}</p>
-                      </div>
-                    )}
-
-                    {selectedWithdrawal.vatCode?.rejectedAt && (
-                      <div className="mb-3">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">VAT Code Rejection</label>
-                        <div className="bg-red-50 p-3 rounded-md">
-                          <p className="text-sm text-red-900 font-medium">Rejected</p>
-                          <p className="text-sm text-red-700 mt-1">{selectedWithdrawal.vatCode.rejectionReason}</p>
-                          <p className="text-xs text-gray-500 mt-1">Rejected: {new Date(selectedWithdrawal.vatCode.rejectedAt).toLocaleString()}</p>
+                      )}
+                      {selectedWithdrawal.vatCode?.adminGenerated && (
+                        <div className="mb-3">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Admin Generated VAT Code</label>
+                          <p className="text-sm text-green-900 bg-green-50 p-3 rounded-md font-mono">{selectedWithdrawal.vatCode.adminGenerated}</p>
+                          <p className="text-xs text-gray-500 mt-1">Confirmed: {new Date(selectedWithdrawal.vatCode.adminConfirmedAt).toLocaleString()}</p>
                         </div>
-                      </div>
-                    )}
-                  </div>
-                )}
+                      )}
+                      {selectedWithdrawal.vatCode?.rejectedAt && (
+                        <div className="mb-3">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">VAT Code Rejection</label>
+                          <div className="bg-red-50 p-3 rounded-md">
+                            <p className="text-sm text-red-900 font-medium">Rejected</p>
+                            <p className="text-sm text-red-700 mt-1">{selectedWithdrawal.vatCode.rejectionReason}</p>
+                            <p className="text-xs text-gray-500 mt-1">Rejected: {new Date(selectedWithdrawal.vatCode.rejectedAt).toLocaleString()}</p>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
 
                 {/* BOT Code Section */}
                 {(selectedWithdrawal.status === 'bot_required' || selectedWithdrawal.status === 'bot_pending' || selectedWithdrawal.status === 'bot_submitted' || selectedWithdrawal.status === 'approved' || selectedWithdrawal.status === 'bot_rejected') && (
