@@ -58,7 +58,7 @@ const AdminLogin = () => {
         setAttempts(0)
         navigate('/admin')
       } else {
-        setError('Access denied. Admin privileges required.')
+        setError('Access denied. Insufficient privileges.')
         setAttempts(prev => prev + 1)
       }
     } else {

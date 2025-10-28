@@ -1083,8 +1083,8 @@ function AdminPanel() {
     return (
       <main className="min-h-screen theme-bg-primary theme-text-primary">
         <div className="max-w-5xl mx-auto py-10 px-4">
-          <h1 className="text-3xl font-bold">Admin Panel</h1>
-          <p className="theme-text-muted mt-2">You do not have admin access.</p>
+          <h1 className="text-3xl font-bold">Access Restricted</h1>
+          <p className="theme-text-muted mt-2">You do not have permission to access this area.</p>
         </div>
       </main>
     )

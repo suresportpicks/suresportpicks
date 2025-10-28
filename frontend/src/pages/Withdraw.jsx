@@ -372,7 +372,7 @@ const Withdraw = () => {
       if (response.ok) {
         setShowVatModal(false)
         setVatCode('')
-        setSuccess('VAT code submitted successfully. Waiting for admin confirmation.')
+        setSuccess('VAT code submitted successfully. Waiting for confirmation.')
         // Refresh withdrawal history
         if (activeTab === 'history') {
           fetchWithdrawHistory()

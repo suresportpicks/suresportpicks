@@ -83,7 +83,7 @@ const Deposit = () => {
       const data = await response.json()
 
       if (response.ok) {
-        setSuccess('Deposit request submitted successfully! An admin will review your request and provide payment instructions shortly.')
+        setSuccess('Deposit request submitted successfully! Your request will be reviewed and payment instructions will be provided shortly.')
         setDepositAmount('')
         // Refresh deposit history to show the new request
         fetchDepositHistory()
