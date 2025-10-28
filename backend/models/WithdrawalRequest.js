@@ -59,8 +59,49 @@ const withdrawalRequestSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'approved', 'rejected', 'processing', 'completed'],
-    default: 'pending'
+    enum: ['pending', 'imf_required', 'vat_pending', 'vat_submitted', 'bot_pending', 'bot_submitted', 'approved', 'rejected', 'processing', 'completed'],
+    default: 'imf_required'
+  },
+  // Verification codes
+  vatCode: {
+    code: {
+      type: String,
+      trim: true
+    },
+    submittedAt: {
+      type: Date
+    },
+    adminGenerated: {
+      type: String,
+      trim: true
+    },
+    adminConfirmedAt: {
+      type: Date
+    },
+    adminConfirmedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }
+  },
+  botCode: {
+    code: {
+      type: String,
+      trim: true
+    },
+    submittedAt: {
+      type: Date
+    },
+    adminGenerated: {
+      type: String,
+      trim: true
+    },
+    adminConfirmedAt: {
+      type: Date
+    },
+    adminConfirmedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }
   },
   requestedAt: {
     type: Date,

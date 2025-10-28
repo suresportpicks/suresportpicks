@@ -100,6 +100,14 @@ function AdminPanel() {
   const [rejectionReason, setRejectionReason] = useState('')
   const [isRejecting, setIsRejecting] = useState(false)
   
+  // VAT and BOT code confirmation states
+  const [vatCode, setVatCode] = useState('')
+  const [botCode, setBotCode] = useState('')
+  const [transactionId, setTransactionId] = useState('')
+  const [adminNotes, setAdminNotes] = useState('')
+  const [isConfirmingVat, setIsConfirmingVat] = useState(false)
+  const [isConfirmingBot, setIsConfirmingBot] = useState(false)
+  
   // Plan management states
   const [plans, setPlans] = useState([])
   const [showPlanModal, setShowPlanModal] = useState(false)
@@ -833,6 +841,128 @@ function AdminPanel() {
     }
   }
 
+  // VAT Code Confirmation
+  async function confirmVatCode(id) {
+    if (!vatCode.trim()) {
+      setError('Please enter a VAT code')
+      return
+    }
+
+    try {
+      setIsConfirmingVat(true)
+      const res = await fetch(`${API_BASE}/admin/withdrawal-requests/${id}/confirm-vat`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify({ vatCode: vatCode.trim() })
+      })
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data?.message || 'Failed to confirm VAT code')
+
+      // Update the withdrawal in the list
+      setWithdrawalRequests(prev => prev.map(withdrawal => 
+        withdrawal.id === id ? { 
+          ...withdrawal, 
+          status: 'bot_pending',
+          vatCode: {
+            ...withdrawal.vatCode,
+            adminGenerated: vatCode.trim(),
+            adminConfirmedAt: new Date(),
+            adminConfirmedBy: user._id
+          }
+        } : withdrawal
+      ))
+
+      // Update selected withdrawal
+      setSelectedWithdrawal(prev => ({
+        ...prev,
+        status: 'bot_pending',
+        vatCode: {
+          ...prev.vatCode,
+          adminGenerated: vatCode.trim(),
+          adminConfirmedAt: new Date(),
+          adminConfirmedBy: user._id
+        }
+      }))
+      
+      setVatCode('')
+      setSuccess('VAT code confirmed successfully. BOT code is now required.')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setIsConfirmingVat(false)
+    }
+  }
+
+  // BOT Code Confirmation
+  async function confirmBotCode(id) {
+    if (!botCode.trim()) {
+      setError('Please enter a BOT code')
+      return
+    }
+
+    try {
+      setIsConfirmingBot(true)
+      const res = await fetch(`${API_BASE}/admin/withdrawal-requests/${id}/confirm-bot`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify({ 
+          botCode: botCode.trim(),
+          transactionId: transactionId.trim() || undefined,
+          adminNotes: adminNotes.trim() || undefined
+        })
+      })
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data?.message || 'Failed to confirm BOT code')
+
+      // Update the withdrawal in the list
+      setWithdrawalRequests(prev => prev.map(withdrawal => 
+        withdrawal.id === id ? { 
+          ...withdrawal, 
+          status: 'approved',
+          botCode: {
+            ...withdrawal.botCode,
+            adminGenerated: botCode.trim(),
+            adminConfirmedAt: new Date(),
+            adminConfirmedBy: user._id
+          },
+          processedBy: user._id,
+          processedAt: new Date()
+        } : withdrawal
+      ))
+
+      // Update selected withdrawal
+      setSelectedWithdrawal(prev => ({
+        ...prev,
+        status: 'approved',
+        botCode: {
+          ...prev.botCode,
+          adminGenerated: botCode.trim(),
+          adminConfirmedAt: new Date(),
+          adminConfirmedBy: user._id
+        },
+        processedBy: user._id,
+        processedAt: new Date()
+      }))
+      
+      setBotCode('')
+      setTransactionId('')
+      setAdminNotes('')
+      setSuccess('BOT code confirmed and withdrawal approved successfully')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setIsConfirmingBot(false)
+    }
+  }
+
   if (user?.role !== 'admin') {
     return (
       <main className="min-h-screen theme-bg-primary theme-text-primary">
@@ -1515,6 +1645,116 @@ function AdminPanel() {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Admin Notes</label>
                     <p className="text-sm text-gray-900 bg-gray-50 p-3 rounded-md">{selectedWithdrawal.adminNotes}</p>
+                  </div>
+                )}
+
+                {/* VAT Code Section */}
+                {(selectedWithdrawal.status === 'vat_submitted' || selectedWithdrawal.status === 'bot_pending' || selectedWithdrawal.status === 'bot_submitted' || selectedWithdrawal.status === 'approved') && (
+                  <div className="border-t pt-4">
+                    <h4 className="text-md font-semibold text-gray-900 mb-3">VAT Code Verification</h4>
+                    
+                    {selectedWithdrawal.vatCode?.userSubmitted && (
+                      <div className="mb-3">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">User Submitted VAT Code</label>
+                        <p className="text-sm text-gray-900 bg-blue-50 p-3 rounded-md font-mono">{selectedWithdrawal.vatCode.userSubmitted}</p>
+                        <p className="text-xs text-gray-500 mt-1">Submitted: {new Date(selectedWithdrawal.vatCode.userSubmittedAt).toLocaleString()}</p>
+                      </div>
+                    )}
+
+                    {selectedWithdrawal.status === 'vat_submitted' && (
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Generate Admin VAT Code</label>
+                          <input
+                            type="text"
+                            value={vatCode}
+                            onChange={(e) => setVatCode(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter VAT code to confirm..."
+                          />
+                        </div>
+                        <button
+                          onClick={() => confirmVatCode(selectedWithdrawal.id)}
+                          disabled={!vatCode.trim() || isConfirmingVat}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                        >
+                          {isConfirmingVat ? 'Confirming...' : 'Confirm VAT Code'}
+                        </button>
+                      </div>
+                    )}
+
+                    {selectedWithdrawal.vatCode?.adminGenerated && (
+                      <div className="mb-3">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Admin Generated VAT Code</label>
+                        <p className="text-sm text-green-900 bg-green-50 p-3 rounded-md font-mono">{selectedWithdrawal.vatCode.adminGenerated}</p>
+                        <p className="text-xs text-gray-500 mt-1">Confirmed: {new Date(selectedWithdrawal.vatCode.adminConfirmedAt).toLocaleString()}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* BOT Code Section */}
+                {(selectedWithdrawal.status === 'bot_submitted' || selectedWithdrawal.status === 'approved') && (
+                  <div className="border-t pt-4">
+                    <h4 className="text-md font-semibold text-gray-900 mb-3">BOT Code Verification</h4>
+                    
+                    {selectedWithdrawal.botCode?.userSubmitted && (
+                      <div className="mb-3">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">User Submitted BOT Code</label>
+                        <p className="text-sm text-gray-900 bg-blue-50 p-3 rounded-md font-mono">{selectedWithdrawal.botCode.userSubmitted}</p>
+                        <p className="text-xs text-gray-500 mt-1">Submitted: {new Date(selectedWithdrawal.botCode.userSubmittedAt).toLocaleString()}</p>
+                      </div>
+                    )}
+
+                    {selectedWithdrawal.status === 'bot_submitted' && (
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Generate Admin BOT Code</label>
+                          <input
+                            type="text"
+                            value={botCode}
+                            onChange={(e) => setBotCode(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter BOT code to confirm..."
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Transaction ID (Optional)</label>
+                          <input
+                            type="text"
+                            value={transactionId}
+                            onChange={(e) => setTransactionId(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter transaction ID..."
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Admin Notes (Optional)</label>
+                          <textarea
+                            value={adminNotes}
+                            onChange={(e) => setAdminNotes(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            rows="2"
+                            placeholder="Enter any admin notes..."
+                          />
+                        </div>
+                        <button
+                          onClick={() => confirmBotCode(selectedWithdrawal.id)}
+                          disabled={!botCode.trim() || isConfirmingBot}
+                          className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+                        >
+                          {isConfirmingBot ? 'Confirming...' : 'Confirm BOT Code & Approve Withdrawal'}
+                        </button>
+                      </div>
+                    )}
+
+                    {selectedWithdrawal.botCode?.adminGenerated && (
+                      <div className="mb-3">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Admin Generated BOT Code</label>
+                        <p className="text-sm text-green-900 bg-green-50 p-3 rounded-md font-mono">{selectedWithdrawal.botCode.adminGenerated}</p>
+                        <p className="text-xs text-gray-500 mt-1">Confirmed: {new Date(selectedWithdrawal.botCode.adminConfirmedAt).toLocaleString()}</p>
+                      </div>
+                    )}
                   </div>
                 )}
                 

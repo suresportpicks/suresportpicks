@@ -1241,4 +1241,111 @@ router.patch('/plans/:id/toggle-status', async (req, res) => {
   }
 });
 
+// PUT /api/admin/withdrawal-requests/:id/confirm-vat - Confirm VAT code and generate BOT requirement
+router.put('/withdrawal-requests/:id/confirm-vat', async (req, res) => {
+  try {
+    const { vatCode } = req.body;
+    
+    if (!vatCode || !vatCode.trim()) {
+      return res.status(400).json({ message: 'VAT code is required' });
+    }
+
+    const withdrawalRequest = await WithdrawalRequest.findById(req.params.id)
+      .populate('user', 'username email balance');
+
+    if (!withdrawalRequest) {
+      return res.status(404).json({ message: 'Withdrawal request not found' });
+    }
+
+    if (withdrawalRequest.status !== 'vat_submitted') {
+      return res.status(400).json({ message: 'VAT code can only be confirmed for submitted VAT codes' });
+    }
+
+    // Generate admin VAT code and confirm
+    withdrawalRequest.vatCode.adminGenerated = vatCode.trim();
+    withdrawalRequest.vatCode.adminConfirmedAt = new Date();
+    withdrawalRequest.vatCode.adminConfirmedBy = req.user._id;
+    withdrawalRequest.status = 'bot_pending';
+    
+    await withdrawalRequest.save();
+
+    res.json({
+      message: 'VAT code confirmed successfully. BOT code is now required.',
+      withdrawalRequest: await WithdrawalRequest.findById(req.params.id)
+        .populate('user', 'username email balance')
+        .populate('processedBy', 'username email')
+        .populate('vatCode.adminConfirmedBy', 'username email')
+    });
+  } catch (error) {
+    console.error('Error confirming VAT code:', error);
+    res.status(500).json({ message: 'Failed to confirm VAT code' });
+  }
+});
+
+// PUT /api/admin/withdrawal-requests/:id/confirm-bot - Confirm BOT code and approve withdrawal
+router.put('/withdrawal-requests/:id/confirm-bot', async (req, res) => {
+  try {
+    const { botCode, transactionId, adminNotes } = req.body;
+    
+    if (!botCode || !botCode.trim()) {
+      return res.status(400).json({ message: 'BOT code is required' });
+    }
+
+    const withdrawalRequest = await WithdrawalRequest.findById(req.params.id)
+      .populate('user', 'username email balance');
+
+    if (!withdrawalRequest) {
+      return res.status(404).json({ message: 'Withdrawal request not found' });
+    }
+
+    if (withdrawalRequest.status !== 'bot_submitted') {
+      return res.status(400).json({ message: 'BOT code can only be confirmed for submitted BOT codes' });
+    }
+
+    // Check if user has sufficient balance
+    if (withdrawalRequest.user.balance < withdrawalRequest.amount) {
+      return res.status(400).json({ 
+        message: 'User has insufficient balance for this withdrawal',
+        userBalance: withdrawalRequest.user.balance,
+        requestedAmount: withdrawalRequest.amount
+      });
+    }
+
+    // Generate admin BOT code and confirm
+    withdrawalRequest.botCode.adminGenerated = botCode.trim();
+    withdrawalRequest.botCode.adminConfirmedAt = new Date();
+    withdrawalRequest.botCode.adminConfirmedBy = req.user._id;
+    
+    // Approve the withdrawal request
+    await withdrawalRequest.approve(req.user._id, transactionId, adminNotes);
+
+    // Deduct amount from user's balance
+    withdrawalRequest.user.balance -= withdrawalRequest.amount;
+    await withdrawalRequest.user.save();
+
+    // Create transaction record
+    await Transaction.create({
+      userId: withdrawalRequest.user._id,
+      type: 'withdraw',
+      amount: withdrawalRequest.amount,
+      status: 'completed',
+      description: `Withdrawal approved - ${withdrawalRequest.paymentMethod}`,
+      transactionId: transactionId || `WD-${Date.now()}`,
+      adminNotes
+    });
+
+    res.json({
+      message: 'BOT code confirmed and withdrawal approved successfully',
+      withdrawalRequest: await WithdrawalRequest.findById(req.params.id)
+        .populate('user', 'username email balance')
+        .populate('processedBy', 'username email')
+        .populate('vatCode.adminConfirmedBy', 'username email')
+        .populate('botCode.adminConfirmedBy', 'username email')
+    });
+  } catch (error) {
+    console.error('Error confirming BOT code:', error);
+    res.status(500).json({ message: 'Failed to confirm BOT code' });
+  }
+});
+
 module.exports = router;

