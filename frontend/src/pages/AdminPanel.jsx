@@ -1886,7 +1886,7 @@ function AdminPanel() {
                   </div>
                 )}
 
-                {/* VAT Code Section */}
+                {/* VAT Code Section - Always show if exists */}
                 <div className="border-t pt-4">
                   <h4 className="text-md font-semibold text-gray-900 mb-3">VAT Code Verification</h4>
                   {selectedWithdrawal.vatCode?.userSubmitted && (
