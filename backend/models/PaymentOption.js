@@ -41,11 +41,7 @@ const paymentOptionSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
-  minAmount: {
-    type: Number,
-    default: 0,
-    min: [0, 'Minimum amount cannot be negative']
-  },
+  // minAmount removed
   maxAmount: {
     type: Number,
     default: 10000,
@@ -132,9 +128,7 @@ paymentOptionSchema.statics.getAllActive = function() {
 
 // Method to validate amount against limits
 paymentOptionSchema.methods.validateAmount = function(amount) {
-  if (amount < this.minAmount) {
-    return { valid: false, message: `Minimum amount is $${this.minAmount}` };
-  }
+  // Minimum withdrawal check removed
   if (amount > this.maxAmount) {
     return { valid: false, message: `Maximum amount is $${this.maxAmount}` };
   }

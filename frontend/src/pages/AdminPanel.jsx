@@ -1543,7 +1543,7 @@ function AdminPanel() {
                     type="text"
                     value={paymentOptionForm.name}
                     onChange={(e) => setPaymentOptionForm(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="e.g., PayPal"
                   />
                 </div>
@@ -1554,7 +1554,7 @@ function AdminPanel() {
                     type="text"
                     value={paymentOptionForm.code}
                     onChange={(e) => setPaymentOptionForm(prev => ({ ...prev, code: e.target.value.toUpperCase() }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="e.g., PAYPAL"
                   />
                 </div>
@@ -1817,7 +1817,7 @@ function AdminPanel() {
                     </div>
                   )}
                 </div>
-                
+
                 {/* Payment Details */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Payment Details</label>
@@ -1871,6 +1871,57 @@ function AdminPanel() {
                     )}
                   </div>
                 </div>
+
+                {/* Display of VAT and BOT Codes */}
+                <div className="space-y-4">
+                  {(selectedWithdrawal.vatCode?.userSubmitted || 
+                    selectedWithdrawal.userVatCode || 
+                    selectedWithdrawal.vatCode?.code || 
+                    selectedWithdrawal.vatCode || 
+                    selectedWithdrawal.vatNumber || 
+                    selectedWithdrawal.vatId) && (
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">User VAT Code</label>
+                      <div className="bg-white p-4 rounded-lg">
+                        <p className="text-sm font-mono">{selectedWithdrawal.vatCode?.userSubmitted || 
+                           selectedWithdrawal.userVatCode || 
+                           selectedWithdrawal.vatCode?.code || 
+                           selectedWithdrawal.vatCode || 
+                           selectedWithdrawal.vatNumber || 
+                           selectedWithdrawal.vatId}</p>
+                        <p className="text-xs text-gray-500 mt-2">
+                          Submitted: {new Date(selectedWithdrawal.vatCode?.userSubmittedAt || 
+                                            selectedWithdrawal.vatSubmittedAt || 
+                                            selectedWithdrawal.createdAt).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {(selectedWithdrawal.botCode?.userSubmitted || 
+                    selectedWithdrawal.userBotCode || 
+                    selectedWithdrawal.botCode?.code || 
+                    selectedWithdrawal.botCode || 
+                    selectedWithdrawal.botNumber || 
+                    selectedWithdrawal.botId) && (
+                    <div className="bg-green-50 p-4 rounded-lg">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">User BOT Code</label>
+                      <div className="bg-white p-4 rounded-lg">
+                        <p className="text-sm font-mono">{selectedWithdrawal.botCode?.userSubmitted || 
+                           selectedWithdrawal.userBotCode || 
+                           selectedWithdrawal.botCode?.code || 
+                           selectedWithdrawal.botCode || 
+                           selectedWithdrawal.botNumber || 
+                           selectedWithdrawal.botId}</p>
+                        <p className="text-xs text-gray-500 mt-2">
+                          Submitted: {new Date(selectedWithdrawal.botCode?.userSubmittedAt || 
+                                            selectedWithdrawal.botSubmittedAt || 
+                                            selectedWithdrawal.createdAt).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
                 
                 {selectedWithdrawal.rejectionReason && (
                   <div>
@@ -1886,92 +1937,81 @@ function AdminPanel() {
                   </div>
                 )}
 
-                {/* VAT Code Section - Always show if exists */}
+                {/* VAT Code Admin Actions Section */}
                 <div className="border-t pt-4">
                   <h4 className="text-md font-semibold text-gray-900 mb-3">VAT Code Verification</h4>
-                  {selectedWithdrawal.vatCode?.userSubmitted && (
-                    <div className="mb-3">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">User Submitted VAT Code</label>
-                      <p className="text-sm text-gray-900 bg-blue-50 p-3 rounded-md font-mono">{selectedWithdrawal.vatCode.userSubmitted}</p>
-                      <p className="text-xs text-gray-500 mt-1">Submitted: {new Date(selectedWithdrawal.vatCode.userSubmittedAt).toLocaleString()}</p>
+                  {(selectedWithdrawal.status === 'vat_pending') && (
+                    <div className="mt-2">
+                      <button
+                        onClick={() => approveUserVatCode(selectedWithdrawal.id)}
+                        disabled={isConfirmingVat}
+                        className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 mr-2"
+                      >
+                        {isConfirmingVat ? 'Approving...' : 'Approve User VAT Code'}
+                      </button>
                     </div>
                   )}
-                  {(selectedWithdrawal.status === 'imf_required' || selectedWithdrawal.status === 'vat_pending' || selectedWithdrawal.status === 'bot_required' || selectedWithdrawal.status === 'bot_pending' || selectedWithdrawal.status === 'bot_submitted' || selectedWithdrawal.status === 'approved' || selectedWithdrawal.status === 'vat_rejected' || selectedWithdrawal.status === 'bot_rejected') && (
-                    <>
-                      {/* VAT actions, admin code, rejection, etc. */}
-                      {(selectedWithdrawal.status === 'vat_pending') && (
-                        <div className="mt-2">
-                          <button
-                            onClick={() => approveUserVatCode(selectedWithdrawal.id)}
-                            disabled={isConfirmingVat}
-                            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 mr-2"
-                          >
-                            {isConfirmingVat ? 'Approving...' : 'Approve User VAT Code'}
-                          </button>
+                  {(selectedWithdrawal.status === 'imf_required' || selectedWithdrawal.status === 'vat_pending') && (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Generate Admin VAT Code</label>
+                        <input
+                          type="text"
+                          value={vatCode}
+                          onChange={(e) => setVatCode(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="Enter VAT code to confirm..."
+                        />
+                      </div>
+                      <div className="flex space-x-3">
+                        <button
+                          onClick={() => confirmVatCode(selectedWithdrawal.id)}
+                          disabled={!vatCode.trim() || isConfirmingVat}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                        >
+                          {isConfirmingVat ? 'Confirming...' : 'Confirm VAT Code'}
+                        </button>
+                      </div>
+                      <div className="border-t pt-3 mt-4">
+                        <h5 className="text-sm font-medium text-gray-700 mb-2">Or Reject VAT Code</h5>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Rejection Reason</label>
+                          <textarea
+                            value={vatRejectionReason}
+                            onChange={(e) => setVatRejectionReason(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                            placeholder="Enter reason for rejecting VAT code..."
+                            rows="3"
+                          />
                         </div>
-                      )}
-                      {(selectedWithdrawal.status === 'imf_required' || selectedWithdrawal.status === 'vat_pending') && (
-                        <div className="space-y-3">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Generate Admin VAT Code</label>
-                            <input
-                              type="text"
-                              value={vatCode}
-                              onChange={(e) => setVatCode(e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              placeholder="Enter VAT code to confirm..."
-                            />
-                          </div>
-                          <div className="flex space-x-3">
-                            <button
-                              onClick={() => confirmVatCode(selectedWithdrawal.id)}
-                              disabled={!vatCode.trim() || isConfirmingVat}
-                              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-                            >
-                              {isConfirmingVat ? 'Confirming...' : 'Confirm VAT Code'}
-                            </button>
-                          </div>
-                          <div className="border-t pt-3 mt-4">
-                            <h5 className="text-sm font-medium text-gray-700 mb-2">Or Reject VAT Code</h5>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">Rejection Reason</label>
-                              <textarea
-                                value={vatRejectionReason}
-                                onChange={(e) => setVatRejectionReason(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                                placeholder="Enter reason for rejecting VAT code..."
-                                rows="3"
-                              />
-                            </div>
-                            <button
-                              onClick={() => rejectVatCode(selectedWithdrawal.id)}
-                              disabled={!vatRejectionReason.trim() || isRejectingVat}
-                              className="mt-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
-                            >
-                              {isRejectingVat ? 'Rejecting...' : 'Reject VAT Code'}
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                      {selectedWithdrawal.vatCode?.adminGenerated && (
-                        <div className="mb-3">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Admin Generated VAT Code</label>
-                          <p className="text-sm text-green-900 bg-green-50 p-3 rounded-md font-mono">{selectedWithdrawal.vatCode.adminGenerated}</p>
-                          <p className="text-xs text-gray-500 mt-1">Confirmed: {new Date(selectedWithdrawal.vatCode.adminConfirmedAt).toLocaleString()}</p>
-                        </div>
-                      )}
-                      {selectedWithdrawal.vatCode?.rejectedAt && (
-                        <div className="mb-3">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">VAT Code Rejection</label>
-                          <div className="bg-red-50 p-3 rounded-md">
-                            <p className="text-sm text-red-900 font-medium">Rejected</p>
-                            <p className="text-sm text-red-700 mt-1">{selectedWithdrawal.vatCode.rejectionReason}</p>
-                            <p className="text-xs text-gray-500 mt-1">Rejected: {new Date(selectedWithdrawal.vatCode.rejectedAt).toLocaleString()}</p>
-                          </div>
-                        </div>
-                      )}
-                    </>
+                        <button
+                          onClick={() => rejectVatCode(selectedWithdrawal.id)}
+                          disabled={!vatRejectionReason.trim() || isRejectingVat}
+                          className="mt-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+                        >
+                          {isRejectingVat ? 'Rejecting...' : 'Reject VAT Code'}
+                        </button>
+                      </div>
+                    </div>
                   )}
+                  {selectedWithdrawal.vatCode?.adminGenerated && (
+                    <div className="mb-3">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Admin Generated VAT Code</label>
+                      <p className="text-sm text-green-900 bg-green-50 p-3 rounded-md font-mono">{selectedWithdrawal.vatCode.adminGenerated}</p>
+                      <p className="text-xs text-gray-500 mt-1">Confirmed: {new Date(selectedWithdrawal.vatCode.adminConfirmedAt).toLocaleString()}</p>
+                    </div>
+                  )}
+                  {selectedWithdrawal.vatCode?.rejectedAt && (
+                    <div className="mb-3">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">VAT Code Rejection</label>
+                      <div className="bg-red-50 p-3 rounded-md">
+                        <p className="text-sm text-red-900 font-medium">Rejected</p>
+                        <p className="text-sm text-red-700 mt-1">{selectedWithdrawal.vatCode.rejectionReason}</p>
+                        <p className="text-xs text-gray-500 mt-1">Rejected: {new Date(selectedWithdrawal.vatCode.rejectedAt).toLocaleString()}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
                 </div>
 
                 {/* BOT Code Section */}
@@ -2189,6 +2229,7 @@ function AdminPanel() {
                     <p className="text-sm text-gray-900">{selectedTicket.user?.firstName} {selectedTicket.user?.lastName}</p>
                     <p className="text-sm text-gray-500">{selectedTicket.user?.email}</p>
                   </div>
+                  
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
                     <select
@@ -2440,7 +2481,7 @@ function AdminPanel() {
                     <p className="text-sm text-gray-600">{plan.description}</p>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className={`px-2 py-1 text-xs rounded-full ${
+                    <span className={`px-2 py-1 text-xs rounded-full ml-2 ${
                       plan.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                     }`}>
                       {plan.isActive ? 'Active' : 'Inactive'}
@@ -2451,20 +2492,20 @@ function AdminPanel() {
                 <div className="space-y-2 mb-4">
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-600">Price:</span>
-                    <span className="text-sm font-medium">${plan.price}</span>
+                    <span className="text-sm font-medium text-gray-900">${plan.price}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-600">Duration:</span>
-                    <span className="text-sm font-medium">{plan.duration} days</span>
+                    <span className="text-sm font-medium text-gray-900">{plan.duration} days</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-600">Access Level:</span>
-                    <span className="text-sm font-medium capitalize">{plan.accessLevel}</span>
+                    <span className="text-sm font-medium text-gray-900 capitalize">{plan.accessLevel}</span>
                   </div>
                   {plan.maxPicks && (
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-600">Max Picks:</span>
-                      <span className="text-sm font-medium">{plan.maxPicks}</span>
+                      <span className="text-sm font-medium text-gray-900">{plan.maxPicks}</span>
                     </div>
                   )}
                 </div>
@@ -2487,7 +2528,7 @@ function AdminPanel() {
                   <div className="flex space-x-2">
                     <button
                       onClick={() => openPlanModal(plan)}
-                      className="text-blue-600 hover:text-blue-800"
+                      className="text-blue-600 hover:text-blue-900"
                       title="Edit Plan"
                     >
                       <Edit className="w-4 h-4" />
@@ -2501,7 +2542,7 @@ function AdminPanel() {
                     </button>
                     <button
                       onClick={() => handleDeletePlan(plan._id)}
-                      className="text-red-600 hover:text-red-800"
+                      className="text-red-600 hover:text-red-900"
                       title="Delete Plan"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -2839,7 +2880,7 @@ function AdminPanel() {
                   <div className="flex justify-between items-start">
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium text-gray-900 truncate">{user.firstName} {user.lastName}</div>
-                      <div className="text-xs text-gray-500 truncate">{user.email}</div>
+                      <div className="text-sm text-gray-500 truncate">{user.email}</div>
                     </div>
                     <span className={`px-2 py-1 text-xs rounded-full ml-2 ${
                       user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -2906,6 +2947,7 @@ function AdminPanel() {
                   <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plan</th>
                   <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
                   <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Deposited</th>
                   <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
@@ -2913,9 +2955,18 @@ function AdminPanel() {
                 {users.map((user) => (
                   <tr key={user._id}>
                     <td className="px-3 lg:px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">{user.firstName} {user.lastName}</div>
-                        <div className="text-sm text-gray-500">{user.email}</div>
+                      <div className="flex items-center">
+                        {user.avatar ? (
+                          <img src={user.avatar} alt={`${user.firstName} ${user.lastName}`} className="w-10 h-10 rounded-full mr-3" />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
+                            <User className="w-5 h-5 text-gray-500" />
+                          </div>
+                        )}
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">{user.firstName} {user.lastName}</div>
+                          <div className="text-xs text-gray-500">{user.email}</div>
+                        </div>
                       </div>
                     </td>
                     <td className="px-3 lg:px-6 py-4 whitespace-nowrap">
@@ -2940,11 +2991,22 @@ function AdminPanel() {
                       </select>
                     </td>
                     <td className="px-3 lg:px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs rounded-full ${
+                      <span className={`px-2 py-1 text-xs rounded-full ml-2 ${
                         user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                       }`}>
                         {user.isActive ? 'Active' : 'Inactive'}
                       </span>
+                    </td>
+                    <td className="px-3 lg:px-6 py-4 whitespace-nowrap">
+                      <input
+                        type="number"
+                        value={user.totalDeposited ?? 0}
+                        min={0}
+                        step={0.01}
+                        onChange={e => updateUser(user._id, { totalDeposited: parseFloat(e.target.value) })}
+                        className="w-24 px-2 py-1 border border-gray-300 rounded text-sm"
+                        title="Total Deposited"
+                      />
                     </td>
                     <td className="px-3 lg:px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                       <button
@@ -3037,10 +3099,10 @@ function AdminPanel() {
                       </button>
                       <button
                         onClick={() => togglePaymentOption(option._id)}
-                        className={`${option.isActive ? 'text-yellow-600 hover:text-yellow-900' : 'text-green-600 hover:text-green-900'}`}
+                        className={`${option.isActive ? 'text-red-600 hover:text-red-800' : 'text-green-600 hover:text-green-800'}`}
                         title={option.isActive ? 'Deactivate' : 'Activate'}
                       >
-                        {option.isActive ? <PinOff className="w-4 h-4" /> : <Pin className="w-4 h-4" />}
+                        {option.isActive ? <XCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
                       </button>
                       <button
                         onClick={() => deletePaymentOption(option._id)}
@@ -3166,28 +3228,6 @@ function AdminPanel() {
           </div>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {transactions.map((transaction) => (
-                  <tr key={transaction._id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{transaction.user?.firstName} {transaction.user?.lastName}</div>
-                      <div className="text-sm text-gray-500">{transaction.user?.email}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transaction.amount}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 capitalize">{transaction.type}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <select
-                        value={transaction.status}
                         onChange={(e) => updateTransaction(transaction._id, e.target.value)}
                         className="text-sm border border-gray-300 rounded px-2 py-1"
                       >

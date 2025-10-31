@@ -190,7 +190,7 @@ router.get('/users/:id', async (req, res) => {
 // PUT /api/admin/users/:id - Update user details
 router.put('/users/:id', async (req, res) => {
   try {
-    const { firstName, lastName, email, phone, plan, role, isActive, planExpiry } = req.body;
+  const { firstName, lastName, email, phone, plan, role, isActive, planExpiry, totalDeposited } = req.body;
     
     const user = await User.findById(req.params.id);
     if (!user) {
@@ -214,6 +214,7 @@ router.put('/users/:id', async (req, res) => {
     if (role !== undefined) user.role = role;
     if (isActive !== undefined) user.isActive = isActive;
     if (planExpiry !== undefined) user.planExpiry = planExpiry;
+  if (totalDeposited !== undefined && typeof totalDeposited === 'number' && totalDeposited >= 0) user.totalDeposited = totalDeposited;
 
     await user.save();
 

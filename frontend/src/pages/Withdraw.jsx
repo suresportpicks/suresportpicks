@@ -220,11 +220,7 @@ const Withdraw = () => {
       return
     }
 
-    if (amount < minWithdraw) {
-      setError(`Minimum withdrawal amount is $${minWithdraw}`)
-      setLoading(false)
-      return
-    }
+    // Minimum withdrawal check removed
 
     if (amount > maxWithdraw) {
       setError(`Maximum withdrawal amount is $${maxWithdraw.toFixed(2)}`)
@@ -429,7 +425,7 @@ const Withdraw = () => {
     }
   }
 
-  const minWithdraw = 20
+  // Minimum withdrawal removed
   const maxWithdraw = Math.min(availableBalance, 5000)
 
   return (
@@ -499,7 +495,7 @@ const Withdraw = () => {
                   <span className="absolute left-3 top-1/2 transform -translate-y-1/2 theme-text-muted">$</span>
                   <input
                     type="number"
-                    min={minWithdraw}
+                    // min removed
                     max={maxWithdraw}
                     step="0.01"
                     value={withdrawAmount}
@@ -510,7 +506,7 @@ const Withdraw = () => {
                   />
                 </div>
                 <p className="text-sm theme-text-muted mt-1">
-                  Minimum: ${minWithdraw}, Maximum: ${maxWithdraw.toFixed(2)}
+                  Maximum: ${maxWithdraw.toFixed(2)}
                 </p>
               </div>
 
@@ -967,7 +963,7 @@ const Withdraw = () => {
 
               <button
                 type="submit"
-                disabled={loading || !withdrawAmount || parseFloat(withdrawAmount) < minWithdraw}
+                disabled={loading || !withdrawAmount}
                 className="w-full bg-red-600 text-white py-3 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Processing...' : `Withdraw $${withdrawAmount || '0.00'}`}
