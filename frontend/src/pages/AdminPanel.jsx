@@ -1212,6 +1212,18 @@ function AdminPanel() {
     )
   }
 
+  // Return the main UI
+  if (user?.role !== 'admin') {
+    return (
+      <main className="min-h-screen theme-bg-primary theme-text-primary">
+        <div className="max-w-5xl mx-auto py-10 px-4">
+          <h1 className="text-3xl font-bold">Access Restricted</h1>
+          <p className="theme-text-muted mt-2">You do not have permission to access this area.</p>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto">
@@ -1997,8 +2009,14 @@ function AdminPanel() {
                   {selectedWithdrawal.vatCode?.adminGenerated && (
                     <div className="mb-3">
                       <label className="block text-sm font-medium text-gray-700 mb-1">Admin Generated VAT Code</label>
-                      <p className="text-sm text-green-900 bg-green-50 p-3 rounded-md font-mono">{selectedWithdrawal.vatCode.adminGenerated}</p>
-                      <p className="text-xs text-gray-500 mt-1">Confirmed: {new Date(selectedWithdrawal.vatCode.adminConfirmedAt).toLocaleString()}</p>
+                      <p className="text-sm text-green-900 bg-green-50 p-3 rounded-md font-mono">
+                        {selectedWithdrawal.vatCode.adminGenerated}
+                      </p>
+                      {selectedWithdrawal.vatCode.adminConfirmedAt && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Confirmed: {new Date(selectedWithdrawal.vatCode.adminConfirmedAt).toLocaleString()}
+                        </p>
+                      )}
                     </div>
                   )}
                   {selectedWithdrawal.vatCode?.rejectedAt && (
@@ -2006,8 +2024,12 @@ function AdminPanel() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">VAT Code Rejection</label>
                       <div className="bg-red-50 p-3 rounded-md">
                         <p className="text-sm text-red-900 font-medium">Rejected</p>
-                        <p className="text-sm text-red-700 mt-1">{selectedWithdrawal.vatCode.rejectionReason}</p>
-                        <p className="text-xs text-gray-500 mt-1">Rejected: {new Date(selectedWithdrawal.vatCode.rejectedAt).toLocaleString()}</p>
+                        {selectedWithdrawal.vatCode.rejectionReason && (
+                          <p className="text-sm text-red-700 mt-1">{selectedWithdrawal.vatCode.rejectionReason}</p>
+                        )}
+                        <p className="text-xs text-gray-500 mt-1">
+                          Rejected: {new Date(selectedWithdrawal.vatCode.rejectedAt).toLocaleString()}
+                        </p>
                       </div>
                     </div>
                   )}
@@ -2155,19 +2177,7 @@ function AdminPanel() {
                 {selectedWithdrawal?.status === 'pending' && (
                   <div className="flex space-x-3">
                     <button
-                      onClick={() => {
-                            console.log('Reject button clicked', {
-                              withdrawalId: selectedWithdrawal?.id,
-                              rejectionReason,
-                              reasonTrimmed: rejectionReason.trim(),
-                              reasonLength: rejectionReason.length
-                            });
-                            
-                            // Visible debugging
-                            alert(`DEBUG: Reject button clicked\nID: ${selectedWithdrawal?.id}\nReason: ${rejectionReason}\nLength: ${rejectionReason.length}`);
-                            
-                            rejectWithdrawal(selectedWithdrawal?.id, rejectionReason);
-                          }}
+                      onClick={() => rejectWithdrawal(selectedWithdrawal?.id, rejectionReason)}
                       disabled={!rejectionReason.trim() || isRejecting}
                       className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
                     >
@@ -2175,8 +2185,8 @@ function AdminPanel() {
                     </button>
                     <button
                       onClick={() => {
-                        markWithdrawalAsProcessing(selectedWithdrawal.id)
-                        setShowWithdrawalModal(false)
+                        markWithdrawalAsProcessing(selectedWithdrawal.id);
+                        setShowWithdrawalModal(false);
                       }}
                       className="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700"
                     >
@@ -2184,8 +2194,8 @@ function AdminPanel() {
                     </button>
                     <button
                       onClick={() => {
-                        approveWithdrawal(selectedWithdrawal.id)
-                        setShowWithdrawalModal(false)
+                        approveWithdrawal(selectedWithdrawal.id);
+                        setShowWithdrawalModal(false);
                       }}
                       className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
                     >
@@ -3228,6 +3238,21 @@ function AdminPanel() {
           </div>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
+              <thead>
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {transactions.map((transaction) => (
+                  <tr key={transaction._id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{transaction._id}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <select
+                        value={transaction.status}
                         onChange={(e) => updateTransaction(transaction._id, e.target.value)}
                         className="text-sm border border-gray-300 rounded px-2 py-1"
                       >
@@ -3813,8 +3838,8 @@ function AdminPanel() {
           </div>
         </div>
       </div>
-    )
+    );
   }
 }
 
-export default AdminPanel
+export default AdminPanel;
