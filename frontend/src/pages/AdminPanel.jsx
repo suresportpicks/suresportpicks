@@ -1774,7 +1774,7 @@ function AdminPanel() {
           </div>
         </div>
       )}
-
+      
       {/* Withdrawal Modal */}
       {showWithdrawalModal && selectedWithdrawal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -1835,7 +1835,6 @@ function AdminPanel() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Payment Details</label>
                   <div className="bg-gray-50 p-3 rounded-md">
                     {selectedWithdrawal.type === 'transaction' ? (
-                      // For Transaction entries, show basic info since they don't have detailed payment info
                       <div className="text-sm text-gray-900">
                         <p><span className="font-medium">Type:</span> Completed Transaction</p>
                         <p><span className="font-medium">Transaction ID:</span> {selectedWithdrawal.transactionId || 'N/A'}</p>
@@ -2126,15 +2125,15 @@ function AdminPanel() {
                       </div>
                     )}
 
-                    {selectedWithdrawal.botCode?.adminGenerated && (
+                    {selectedWithdrawal.botCode?.adminGenerated ? (
                       <div className="mb-3">
                         <label className="block text-sm font-medium text-gray-700 mb-1">Admin Generated BOT Code</label>
                         <p className="text-sm text-green-900 bg-green-50 p-3 rounded-md font-mono">{selectedWithdrawal.botCode.adminGenerated}</p>
                         <p className="text-xs text-gray-500 mt-1">Confirmed: {new Date(selectedWithdrawal.botCode.adminConfirmedAt).toLocaleString()}</p>
                       </div>
-                    )}
+                    ) : null}
 
-                    {selectedWithdrawal.botCode?.rejectedAt && (
+                    {selectedWithdrawal.botCode?.rejectedAt ? (
                       <div className="mb-3">
                         <label className="block text-sm font-medium text-gray-700 mb-1">BOT Code Rejection</label>
                         <div className="bg-red-50 p-3 rounded-md">
@@ -2143,7 +2142,7 @@ function AdminPanel() {
                           <p className="text-xs text-gray-500 mt-1">Rejected: {new Date(selectedWithdrawal.botCode.rejectedAt).toLocaleString()}</p>
                         </div>
                       </div>
-                    )}
+                    ) : null}
                   </div>
                 )}
                 
@@ -2206,10 +2205,7 @@ function AdminPanel() {
               </div>
             </div>
           </div>
-        </div>
       )}
-
-      {/* Support Ticket Modal */}
       {showTicketModal && selectedTicket && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] flex flex-col">
@@ -2236,8 +2232,8 @@ function AdminPanel() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">User</label>
-                    <p className="text-sm text-gray-900">{selectedTicket.user?.firstName} {selectedTicket.user?.lastName}</p>
-                    <p className="text-sm text-gray-500">{selectedTicket.user?.email}</p>
+                    <p className="text-sm text-gray-900">{`${selectedTicket.user?.firstName || ''} ${selectedTicket.user?.lastName || ''}`}</p>
+                    <p className="text-sm text-gray-500">{selectedTicket.user?.email || ''}</p>
                   </div>
                   
                   <div>
