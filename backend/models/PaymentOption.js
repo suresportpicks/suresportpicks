@@ -109,7 +109,6 @@ const paymentOptionSchema = new mongoose.Schema({
 
 // Indexes for efficient queries
 paymentOptionSchema.index({ type: 1, isActive: 1, sortOrder: 1 });
-paymentOptionSchema.index({ code: 1 });
 paymentOptionSchema.index({ category: 1 });
 
 // Static method to get active payment options by type

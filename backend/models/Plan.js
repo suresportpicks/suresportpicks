@@ -91,7 +91,6 @@ const planSchema = new mongoose.Schema({
 
 // Index for efficient queries
 planSchema.index({ order: 1, isActive: 1 });
-planSchema.index({ name: 1 });
 
 // Static method to get all active plans
 planSchema.statics.getActivePlans = function() {
