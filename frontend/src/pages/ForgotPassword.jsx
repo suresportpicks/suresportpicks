@@ -28,7 +28,30 @@ const ForgotPassword = () => {
       })
 
       console.log('Response status:', response.status)
-      const data = await response.json()
+      console.log('Response headers:', response.headers)
+      
+      // Check if response has content
+      const contentType = response.headers.get('content-type')
+      console.log('Content-Type:', contentType)
+      
+      let data
+      const responseText = await response.text()
+      console.log('Response text:', responseText)
+      
+      if (responseText) {
+        try {
+          data = JSON.parse(responseText)
+        } catch (parseErr) {
+          console.error('Failed to parse JSON:', parseErr)
+          console.error('Raw response:', responseText)
+          setError('Server error: Invalid response format')
+          setLoading(false)
+          return
+        }
+      } else {
+        data = {}
+      }
+      
       console.log('Response data:', data)
 
       if (response.ok) {
