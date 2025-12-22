@@ -132,7 +132,7 @@ const ResetPassword = () => {
 
             <div className="text-center space-y-4">
               <p className="text-sm theme-text-primary">
-                Password reset links expire after 1 hour for security reasons.
+                Password reset links expire after 10 minutes for security reasons.
               </p>
               
               <div className="space-y-2">

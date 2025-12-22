@@ -449,6 +449,46 @@ router.post('/forgot-password', [
   }
 });
 
+// @route   POST /api/auth/validate-reset-token
+// @desc    Validate password reset token
+// @access  Public
+router.post('/validate-reset-token', async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    if (!token) {
+      return res.status(400).json({
+        message: 'Reset token is required'
+      });
+    }
+
+    // Hash the token to compare with stored hash
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpire: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        message: 'Invalid or expired reset token'
+      });
+    }
+
+    res.json({
+      message: 'Reset token is valid',
+      valid: true
+    });
+  } catch (error) {
+    console.error('Validate reset token error:', error);
+    res.status(500).json({
+      message: 'Failed to validate reset token',
+      error: 'VALIDATION_ERROR'
+    });
+  }
+});
+
 // @route   POST /api/auth/reset-password/:token
 // @desc    Reset password with token
 // @access  Public
