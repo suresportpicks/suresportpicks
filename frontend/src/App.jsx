@@ -49,7 +49,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             
             {/* Dashboard Routes with Sidebar Layout */}
