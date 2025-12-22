@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams, useParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 const ResetPassword = () => {
@@ -15,8 +15,8 @@ const ResetPassword = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const { API_BASE, login } = useAuth()
-
-  const token = searchParams.get('token')
+  const params = useParams()
+  const token = params.token || searchParams.get('token')
 
   useEffect(() => {
     if (!token) {
@@ -75,12 +75,12 @@ const ResetPassword = () => {
     setLoading(true)
 
     try {
-      const response = await fetch(`${API_BASE}/auth/reset-password`, {
+      const response = await fetch(`${API_BASE}/auth/reset-password/${token}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ token, password }),
+        body: JSON.stringify({ password }),
       })
 
       const data = await response.json()
