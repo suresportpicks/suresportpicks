@@ -18,6 +18,7 @@ const ForgotPassword = () => {
     setMessage('')
 
     try {
+      console.log('Sending forgot password request to:', `${API_BASE}/auth/forgot-password`)
       const response = await fetch(`${API_BASE}/auth/forgot-password`, {
         method: 'POST',
         headers: {
@@ -26,7 +27,9 @@ const ForgotPassword = () => {
         body: JSON.stringify({ email }),
       })
 
+      console.log('Response status:', response.status)
       const data = await response.json()
+      console.log('Response data:', data)
 
       if (response.ok) {
         setMessage(data.message || 'Password reset email sent successfully!')
@@ -35,6 +38,7 @@ const ForgotPassword = () => {
         setError(data.message || 'Failed to send password reset email')
       }
     } catch (err) {
+      console.error('Forgot password error:', err)
       setError('Network error. Please try again.')
     } finally {
       setLoading(false)
