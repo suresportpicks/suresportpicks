@@ -2,7 +2,28 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from '
 
 const AuthContext = createContext(null)
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+// Get API base URL with fallback logic for production
+const getAPIBase = () => {
+  // Try to use the Vite env var first
+  const envAPI = import.meta.env.VITE_API_URL
+  if (envAPI) return envAPI
+  
+  // Fallback: detect based on current domain
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname
+    if (hostname.includes('suresportpicks.com')) {
+      return 'https://api.suresportpicks.com/api'
+    }
+    if (hostname.includes('localhost')) {
+      return 'http://localhost:3001/api'
+    }
+  }
+  
+  // Default fallback
+  return 'http://localhost:5000/api'
+}
+
+const API_BASE = getAPIBase()
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
