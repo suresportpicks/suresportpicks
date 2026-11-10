@@ -1,0 +1,32 @@
+<svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="nflGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e3a8a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" />
+    </linearGradient>
+    <filter id="nflGlow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Shield Background -->
+  <path d="M60 5 L100 20 L100 50 C100 65 85 75 60 75 C35 75 20 65 20 50 L20 20 Z" 
+        fill="url(#nflGradient)" 
+        stroke="#f59e0b" 
+        stroke-width="2" 
+        filter="url(#nflGlow)"/>
+  
+  <!-- NFL Text -->
+  <text x="60" y="35" text-anchor="middle" fill="white" font-family="Arial Black, sans-serif" font-size="16" font-weight="bold">NFL</text>
+  
+  <!-- Football Icon -->
+  <ellipse cx="60" cy="50" rx="12" ry="8" fill="#8b4513" stroke="white" stroke-width="1"/>
+  <line x1="54" y1="50" x2="66" y2="50" stroke="white" stroke-width="1"/>
+  <line x1="57" y1="47" x2="57" y2="53" stroke="white" stroke-width="0.5"/>
+  <line x1="60" y1="47" x2="60" y2="53" stroke="white" stroke-width="0.5"/>
+  <line x1="63" y1="47" x2="63" y2="53" stroke="white" stroke-width="0.5"/>
+</svg>

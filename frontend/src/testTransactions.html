@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Transactions</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .transaction { border: 1px solid #ccc; margin: 10px 0; padding: 10px; }
+        .status-completed { color: green; }
+        .status-pending { color: orange; }
+        .status-failed { color: red; }
+        .status-processing { color: blue; }
+        .amount-positive { color: green; }
+        .amount-negative { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Transaction Display Test</h1>
+    <div id="login-section">
+        <h2>Login</h2>
+        <input type="email" id="email" placeholder="Email" value="john@example.com">
+        <input type="password" id="password" placeholder="Password" value="password123">
+        <button onclick="login()">Login</button>
+        <div id="login-status"></div>
+    </div>
+    
+    <div id="transactions-section" style="display: none;">
+        <h2>Transactions</h2>
+        <div>
+            <label>Type Filter:</label>
+            <select id="typeFilter" onchange="fetchTransactions()">
+                <option value="">All Types</option>
+                <option value="deposit">Deposit</option>
+                <option value="withdraw">Withdraw</option>
+                <option value="referral">Referral</option>
+                <option value="subscription">Subscription</option>
+            </select>
+            
+            <label>Date Range:</label>
+            <select id="dateFilter" onchange="fetchTransactions()">
+                <option value="">All Time</option>
+                <option value="today">Today</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+                <option value="year">This Year</option>
+            </select>
+            
+            <label>Search:</label>
+            <input type="text" id="searchFilter" placeholder="Search..." onkeyup="fetchTransactions()">
+        </div>
+        
+        <div id="transactions-list"></div>
+        <button onclick="exportCSV()">Export CSV</button>
+    </div>
+
+    <script>
+        let authToken = '';
+        
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const statusDiv = document.getElementById('login-status');
+            
+            try {
+                const response = await fetch('http://localhost:3001/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    authToken = data.token;
+                    statusDiv.innerHTML = '<span style="color: green;">✅ Login successful!</span>';
+                    document.getElementById('login-section').style.display = 'none';
+                    document.getElementById('transactions-section').style.display = 'block';
+                    fetchTransactions();
+                } else {
+                    statusDiv.innerHTML = `<span style="color: red;">❌ ${data.message}</span>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<span style="color: red;">❌ Error: ${error.message}</span>`;
+            }
+        }
+        
+        async function fetchTransactions() {
+            const type = document.getElementById('typeFilter').value;
+            const dateRange = document.getElementById('dateFilter').value;
+            const search = document.getElementById('searchFilter').value;
+            
+            const params = new URLSearchParams();
+            if (type) params.append('type', type);
+            if (dateRange) params.append('dateRange', dateRange);
+            if (search) params.append('search', search);
+            
+            try {
+                const response = await fetch(`http://localhost:3001/api/payments/transactions?${params}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayTransactions(data.transactions);
+                } else {
+                    document.getElementById('transactions-list').innerHTML = `<p style="color: red;">Error: ${data.message}</p>`;
+                }
+            } catch (error) {
+                document.getElementById('transactions-list').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+        
+        function displayTransactions(transactions) {
+            const listDiv = document.getElementById('transactions-list');
+            
+            if (transactions.length === 0) {
+                listDiv.innerHTML = '<p>No transactions found.</p>';
+                return;
+            }
+            
+            let html = `<h3>Found ${transactions.length} transactions:</h3>`;
+            
+            transactions.forEach(tx => {
+                const statusClass = `status-${tx.status}`;
+                const amountClass = tx.type === 'deposit' || tx.type === 'referral' ? 'amount-positive' : 'amount-negative';
+                const amountSign = tx.type === 'deposit' || tx.type === 'referral' ? '+' : '-';
+                
+                html += `
+                    <div class="transaction">
+                        <strong>${tx.type.toUpperCase()}</strong> - 
+                        <span class="${amountClass}">${amountSign}$${tx.amount}</span> - 
+                        <span class="${statusClass}">${tx.status.toUpperCase()}</span><br>
+                        <small>${tx.description}</small><br>
+                        <small>Date: ${new Date(tx.createdAt).toLocaleString()}</small>
+                    </div>
+                `;
+            });
+            
+            listDiv.innerHTML = html;
+        }
+        
+        async function exportCSV() {
+            try {
+                const response = await fetch('http://localhost:3001/api/payments/transactions?limit=1000', {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const csv = convertToCSV(data.transactions);
+                    downloadCSV(csv, 'transactions.csv');
+                } else {
+                    alert('Error exporting CSV: ' + data.message);
+                }
+            } catch (error) {
+                alert('Error exporting CSV: ' + error.message);
+            }
+        }
+        
+        function convertToCSV(transactions) {
+            const headers = ['Date', 'Type', 'Amount', 'Status', 'Description'];
+            const rows = transactions.map(tx => [
+                new Date(tx.createdAt).toLocaleDateString(),
+                tx.type,
+                tx.amount,
+                tx.status,
+                tx.description
+            ]);
+            
+            return [headers, ...rows].map(row => row.join(',')).join('\\n');
+        }
+        
+        function downloadCSV(csv, filename) {
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

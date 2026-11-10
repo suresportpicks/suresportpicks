@@ -1,0 +1,80 @@
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Premium Sports Background -->
+  <defs>
+    <linearGradient id="premiumGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#1F2937" stopOpacity="0.9"/>
+      <stop offset="50%" stopColor="#374151" stopOpacity="0.7"/>
+      <stop offset="100%" stopColor="#1F2937" stopOpacity="0.9"/>
+    </linearGradient>
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stopColor="#FFD700"/>
+      <stop offset="100%" stopColor="#FFA500"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="600" fill="url(#premiumGradient)"/>
+  
+  <!-- Stadium Lights -->
+  <circle cx="150" cy="100" r="30" fill="#FFD700" opacity="0.3"/>
+  <circle cx="650" cy="100" r="30" fill="#FFD700" opacity="0.3"/>
+  <circle cx="150" cy="500" r="30" fill="#FFD700" opacity="0.3"/>
+  <circle cx="650" cy="500" r="30" fill="#FFD700" opacity="0.3"/>
+  
+  <!-- Sports Equipment Silhouettes -->
+  <!-- Football -->
+  <ellipse cx="200" cy="200" rx="15" ry="25" fill="#8B4513" opacity="0.4" transform="rotate(30 200 200)"/>
+  <line x1="190" y1="190" x2="210" y2="210" stroke="#FFFFFF" strokeWidth="2" opacity="0.4"/>
+  
+  <!-- Basketball -->
+  <circle cx="600" cy="180" r="20" fill="#FF8C42" opacity="0.4"/>
+  <path d="M 580 180 Q 600 160 620 180" stroke="#8B4513" strokeWidth="2" fill="none" opacity="0.4"/>
+  <path d="M 580 180 Q 600 200 620 180" stroke="#8B4513" strokeWidth="2" fill="none" opacity="0.4"/>
+  <line x1="600" y1="160" x2="600" y2="200" stroke="#8B4513" strokeWidth="2" opacity="0.4"/>
+  
+  <!-- Soccer Ball -->
+  <circle cx="150" cy="400" r="18" fill="#FFFFFF" opacity="0.4"/>
+  <path d="M 140 395 L 145 385 L 155 385 L 160 395 L 155 405 L 145 405 Z" fill="#000000" opacity="0.4"/>
+  
+  <!-- Trophy -->
+  <g transform="translate(600, 420)" opacity="0.5">
+    <rect x="-8" y="10" width="16" height="20" fill="url(#goldGradient)" rx="2"/>
+    <ellipse cx="0" cy="5" rx="12" ry="8" fill="url(#goldGradient)"/>
+    <rect x="-15" y="30" width="30" height="8" fill="url(#goldGradient)" rx="4"/>
+    <circle cx="-8" cy="5" r="3" fill="#FFD700"/>
+    <circle cx="8" cy="5" r="3" fill="#FFD700"/>
+  </g>
+  
+  <!-- Data Visualization Elements -->
+  <g opacity="0.3">
+    <!-- Chart Bars -->
+    <rect x="300" y="150" width="20" height="60" fill="#10B981"/>
+    <rect x="330" y="130" width="20" height="80" fill="#3B82F6"/>
+    <rect x="360" y="110" width="20" height="100" fill="#FFD700"/>
+    <rect x="390" y="140" width="20" height="70" fill="#EF4444"/>
+    <rect x="420" y="120" width="20" height="90" fill="#8B5CF6"/>
+    
+    <!-- Connecting Lines -->
+    <path d="M 310 180 Q 340 160 370 140 Q 400 170 430 150" stroke="#FFD700" strokeWidth="2" fill="none" strokeDasharray="5,5"/>
+  </g>
+  
+  <!-- Floating Particles -->
+  <g opacity="0.6">
+    <circle cx="100" cy="300" r="3" fill="#FFD700">
+      <animate attributeName="cy" values="300;280;300" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="700" cy="350" r="2" fill="#3B82F6">
+      <animate attributeName="cy" values="350;330;350" dur="4s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="400" cy="450" r="2.5" fill="#10B981">
+      <animate attributeName="cy" values="450;430;450" dur="3.5s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Premium Badge -->
+  <g transform="translate(400, 50)">
+    <circle cx="0" cy="0" r="40" fill="url(#goldGradient)" opacity="0.8"/>
+    <text x="0" y="-5" textAnchor="middle" fill="#1F2937" fontSize="12" fontWeight="bold">VIP</text>
+    <text x="0" y="8" textAnchor="middle" fill="#1F2937" fontSize="8">ACCESS</text>
+  </g>
+</svg>

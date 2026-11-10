@@ -1,0 +1,37 @@
+<svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="plGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b0764;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:1" />
+    </linearGradient>
+    <filter id="plGlow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Crown Background -->
+  <path d="M20 25 L30 15 L40 20 L50 10 L60 15 L70 10 L80 20 L90 15 L100 25 L95 55 L25 55 Z" 
+        fill="url(#plGradient)" 
+        stroke="#f59e0b" 
+        stroke-width="2" 
+        filter="url(#plGlow)"/>
+  
+  <!-- Crown Jewels -->
+  <circle cx="35" cy="25" r="3" fill="#dc2626"/>
+  <circle cx="60" cy="20" r="4" fill="#dc2626"/>
+  <circle cx="85" cy="25" r="3" fill="#dc2626"/>
+  
+  <!-- Lion -->
+  <circle cx="60" cy="40" r="8" fill="#f59e0b"/>
+  <circle cx="57" cy="37" r="1" fill="#000"/>
+  <circle cx="63" cy="37" r="1" fill="#000"/>
+  <path d="M55 42 Q60 45 65 42" stroke="#000" stroke-width="1" fill="none"/>
+  
+  <!-- PL Text -->
+  <text x="60" y="60" text-anchor="middle" fill="white" font-family="Arial Black, sans-serif" font-size="10" font-weight="bold">PREMIER</text>
+  <text x="60" y="72" text-anchor="middle" fill="white" font-family="Arial Black, sans-serif" font-size="10" font-weight="bold">LEAGUE</text>
+</svg>

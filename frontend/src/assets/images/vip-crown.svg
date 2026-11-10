@@ -1,0 +1,49 @@
+<svg viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="crownGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#FFD700"/>
+      <stop offset="50%" stopColor="#FFA500"/>
+      <stop offset="100%" stopColor="#FF8C00"/>
+    </linearGradient>
+    <linearGradient id="gemGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#FF6B6B"/>
+      <stop offset="50%" stopColor="#FF4757"/>
+      <stop offset="100%" stopColor="#C44569"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Crown Base -->
+  <path d="M 15 60 L 85 60 L 80 50 L 20 50 Z" fill="url(#crownGradient)" filter="url(#glow)"/>
+  
+  <!-- Crown Points -->
+  <path d="M 20 50 L 25 30 L 30 50" fill="url(#crownGradient)"/>
+  <path d="M 30 50 L 40 20 L 50 50" fill="url(#crownGradient)"/>
+  <path d="M 50 50 L 60 20 L 70 50" fill="url(#crownGradient)"/>
+  <path d="M 70 50 L 75 30 L 80 50" fill="url(#crownGradient)"/>
+  
+  <!-- Center Peak -->
+  <path d="M 40 20 L 50 10 L 60 20" fill="url(#crownGradient)"/>
+  
+  <!-- Gems -->
+  <circle cx="27" cy="40" r="3" fill="url(#gemGradient)"/>
+  <circle cx="50" cy="30" r="4" fill="url(#gemGradient)"/>
+  <circle cx="73" cy="40" r="3" fill="url(#gemGradient)"/>
+  
+  <!-- Highlights -->
+  <path d="M 25 35 L 30 30 L 35 35" stroke="#FFFFFF" strokeWidth="1" fill="none" opacity="0.8"/>
+  <path d="M 45 25 L 50 20 L 55 25" stroke="#FFFFFF" strokeWidth="1" fill="none" opacity="0.8"/>
+  <path d="M 70 35 L 75 30 L 80 35" stroke="#FFFFFF" strokeWidth="1" fill="none" opacity="0.8"/>
+  
+  <!-- Base Decoration -->
+  <rect x="20" y="55" width="60" height="3" fill="#FF8C00" rx="1"/>
+  <circle cx="30" cy="56.5" r="1" fill="#FFD700"/>
+  <circle cx="50" cy="56.5" r="1" fill="#FFD700"/>
+  <circle cx="70" cy="56.5" r="1" fill="#FFD700"/>
+</svg>
