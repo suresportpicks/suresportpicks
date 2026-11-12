@@ -3,27 +3,27 @@ import { toast } from 'react-toastify';
 import axios from 'axios';
 
 const WithdrawalDetailsModal = ({ isOpen, onClose, withdrawal, onUpdate }) => {
-  const [imfCode, setImfCode] = useState('');
+  const [vatCode, setVatCode] = useState('');
   const [botCode, setBotCode] = useState('');
   const [rejectionReason, setRejectionReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleConfirmImf = async () => {
-    if (!imfCode.trim()) {
-      toast.error('Please enter an IMF code');
+  const handleConfirmVat = async () => {
+    if (!vatCode.trim()) {
+      toast.error('Please enter a VAT code');
       return;
     }
     setIsSubmitting(true);
 
     try {
-      const response = await axios.put(`/api/admin/withdrawal-requests/${withdrawal._id}/confirm-imf`, {
-        imfCode
+      const response = await axios.put(`/api/admin/withdrawal-requests/${withdrawal._id}/confirm-vat`, {
+        vatCode
       });
-      toast.success('IMF code confirmed successfully');
+      toast.success('VAT code confirmed successfully');
       onUpdate(response.data.withdrawalRequest);
-      setImfCode('');
+      setVatCode('');
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Error confirming IMF code');
+      toast.error(error.response?.data?.message || 'Error confirming VAT code');
     } finally {
       setIsSubmitting(false);
     }
@@ -50,7 +50,7 @@ const WithdrawalDetailsModal = ({ isOpen, onClose, withdrawal, onUpdate }) => {
     }
   };
 
-  const handleRejectImf = async () => {
+  const handleRejectVat = async () => {
     if (!rejectionReason.trim()) {
       toast.error('Please provide a rejection reason');
       return;
@@ -58,14 +58,14 @@ const WithdrawalDetailsModal = ({ isOpen, onClose, withdrawal, onUpdate }) => {
     setIsSubmitting(true);
 
     try {
-      const response = await axios.put(`/api/admin/withdrawal-requests/${withdrawal._id}/reject-imf`, {
+      const response = await axios.put(`/api/admin/withdrawal-requests/${withdrawal._id}/reject-vat`, {
         reason: rejectionReason
       });
-      toast.success('IMF code rejected successfully');
+      toast.success('VAT code rejected successfully');
       onUpdate(response.data.withdrawalRequest);
       setRejectionReason('');
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Error rejecting IMF code');
+      toast.error(error.response?.data?.message || 'Error rejecting VAT code');
     } finally {
       setIsSubmitting(false);
     }
@@ -126,32 +126,32 @@ const WithdrawalDetailsModal = ({ isOpen, onClose, withdrawal, onUpdate }) => {
             </div>
           </div>
 
-          {['imf_required', 'imf_pending', 'bot_required', 'bot_pending'].includes(withdrawal.status) && (
+          {['imf_required', 'vat_pending', 'bot_required', 'bot_pending'].includes(withdrawal.status) && (
             <div className="space-y-4">
-              {['imf_required', 'imf_pending'].includes(withdrawal.status) && (
+              {['imf_required', 'vat_pending'].includes(withdrawal.status) && (
                 <div className="bg-white p-4 rounded-lg border">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">IMF Code Verification</h4>
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">VAT Code Verification</h4>
                   <div className="space-y-2">
-                    {withdrawal.imfCode?.userSubmitted && (
+                    {withdrawal.vatCode?.userSubmitted && (
                       <div>
                         <p className="text-sm text-gray-500">User Submitted Code</p>
-                        <p className="font-medium">{withdrawal.imfCode.userSubmitted}</p>
-                        <p className="text-xs text-gray-400">Submitted at: {new Date(withdrawal.imfCode.userSubmittedAt).toLocaleString()}</p>
+                        <p className="font-medium">{withdrawal.vatCode.userSubmitted}</p>
+                        <p className="text-xs text-gray-400">Submitted at: {new Date(withdrawal.vatCode.userSubmittedAt).toLocaleString()}</p>
                       </div>
                     )}
                     <div>
-                      <label htmlFor="imfCode" className="block text-sm text-gray-700">Admin IMF Code</label>
+                      <label htmlFor="vatCode" className="block text-sm text-gray-700">Admin VAT Code</label>
                       <div className="mt-1 flex space-x-2">
                         <input
                           type="text"
-                          id="imfCode"
-                          value={imfCode}
-                          onChange={(e) => setImfCode(e.target.value)}
+                          id="vatCode"
+                          value={vatCode}
+                          onChange={(e) => setVatCode(e.target.value)}
                           className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                          placeholder="Enter IMF code"
+                          placeholder="Enter VAT code"
                         />
                         <button
-                          onClick={handleConfirmImf}
+                          onClick={handleConfirmVat}
                           disabled={isSubmitting}
                           className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
                         >
@@ -160,18 +160,18 @@ const WithdrawalDetailsModal = ({ isOpen, onClose, withdrawal, onUpdate }) => {
                       </div>
                     </div>
                     <div>
-                      <label htmlFor="imfRejectionReason" className="block text-sm text-gray-700">Rejection Reason</label>
+                      <label htmlFor="vatRejectionReason" className="block text-sm text-gray-700">Rejection Reason</label>
                       <div className="mt-1 flex space-x-2">
                         <input
                           type="text"
-                          id="imfRejectionReason"
+                          id="vatRejectionReason"
                           value={rejectionReason}
                           onChange={(e) => setRejectionReason(e.target.value)}
                           className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                           placeholder="Enter rejection reason"
                         />
                         <button
-                          onClick={handleRejectImf}
+                          onClick={handleRejectVat}
                           disabled={isSubmitting}
                           className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
                         >
@@ -182,7 +182,6 @@ const WithdrawalDetailsModal = ({ isOpen, onClose, withdrawal, onUpdate }) => {
                   </div>
                 </div>
               )}
-
 
               {['bot_required', 'bot_pending'].includes(withdrawal.status) && (
                 <div className="bg-white p-4 rounded-lg border">

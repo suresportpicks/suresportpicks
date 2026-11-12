@@ -744,15 +744,15 @@ res.status(500).json({ message: 'Failed to fetch transactions', error: 'FETCH_TR
 }
 })
 
-// @route   POST /api/payments/withdrawal/:id/imf-code
-// @desc    Submit IMF code for withdrawal verification
+// @route   POST /api/payments/withdrawal/:id/vat-code
+// @desc    Submit VAT code for withdrawal verification
 // @access  Private
-router.post('/withdrawal/:id/imf-code', authenticateToken, async (req, res) => {
+router.post('/withdrawal/:id/vat-code', authenticateToken, async (req, res) => {
   try {
-    const { imfCode } = req.body;
+    const { vatCode } = req.body;
     
-    if (!imfCode || !imfCode.trim()) {
-      return res.status(400).json({ message: 'IMF code is required' });
+    if (!vatCode || !vatCode.trim()) {
+      return res.status(400).json({ message: 'VAT code is required' });
     }
 
     const withdrawalRequest = await WithdrawalRequest.findById(req.params.id);
@@ -768,26 +768,26 @@ router.post('/withdrawal/:id/imf-code', authenticateToken, async (req, res) => {
 
     // Check if withdrawal is in the correct status
     if (withdrawalRequest.status !== 'imf_required') {
-      return res.status(400).json({ message: 'IMF code can only be submitted for withdrawals requiring IMF verification' });
+      return res.status(400).json({ message: 'VAT code can only be submitted for withdrawals requiring IMF verification' });
     }
 
-    // Update withdrawal with IMF code
-    withdrawalRequest.imfCode = {
-      ...withdrawalRequest.imfCode,
-      userSubmitted: imfCode.trim(),
+    // Update withdrawal with VAT code
+    withdrawalRequest.vatCode = {
+      ...withdrawalRequest.vatCode,
+      userSubmitted: vatCode.trim(),
       userSubmittedAt: new Date()
     };
-    withdrawalRequest.status = 'imf_pending';
+    withdrawalRequest.status = 'vat_pending';
     
     await withdrawalRequest.save();
 
     res.json({
-      message: 'IMF code submitted successfully. Waiting for admin confirmation.',
+      message: 'VAT code submitted successfully. Waiting for admin confirmation.',
       withdrawalRequest
     });
   } catch (error) {
-    console.error('IMF code submission error:', error);
-    res.status(500).json({ message: 'Failed to submit IMF code' });
+    console.error('VAT code submission error:', error);
+    res.status(500).json({ message: 'Failed to submit VAT code' });
   }
 });
 

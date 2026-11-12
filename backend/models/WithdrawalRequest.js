@@ -59,11 +59,11 @@ const withdrawalRequestSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'imf_required', 'imf_pending', 'imf_rejected', 'bot_required', 'bot_pending', 'bot_rejected', 'approved', 'rejected', 'processing', 'completed'],
+    enum: ['pending', 'imf_required', 'vat_pending', 'vat_rejected', 'bot_required', 'bot_pending', 'bot_rejected', 'approved', 'rejected', 'processing', 'completed'],
     default: 'imf_required'
   },
   // Verification codes
-  imfCode: {
+  vatCode: {
     code: {
       type: String,
       trim: true
@@ -99,7 +99,7 @@ const withdrawalRequestSchema = new mongoose.Schema({
     rejectionReason: {
       type: String,
       trim: true,
-      maxlength: [500, 'IMF rejection reason cannot exceed 500 characters']
+      maxlength: [500, 'VAT rejection reason cannot exceed 500 characters']
     }
   },
   botCode: {

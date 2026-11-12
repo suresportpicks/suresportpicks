@@ -1242,13 +1242,13 @@ router.patch('/plans/:id/toggle-status', async (req, res) => {
   }
 });
 
-// PUT /api/admin/withdrawal-requests/:id/confirm-imf - Confirm IMF code and generate BOT requirement
-router.put('/withdrawal-requests/:id/confirm-imf', async (req, res) => {
+// PUT /api/admin/withdrawal-requests/:id/confirm-vat - Confirm VAT code and generate BOT requirement
+router.put('/withdrawal-requests/:id/confirm-vat', async (req, res) => {
   try {
-    const { imfCode } = req.body;
+    const { vatCode } = req.body;
     
-    if (!imfCode || !imfCode.trim()) {
-      return res.status(400).json({ message: 'IMF code is required' });
+    if (!vatCode || !vatCode.trim()) {
+      return res.status(400).json({ message: 'VAT code is required' });
     }
 
     const withdrawalRequest = await WithdrawalRequest.findById(req.params.id)
@@ -1258,28 +1258,28 @@ router.put('/withdrawal-requests/:id/confirm-imf', async (req, res) => {
       return res.status(404).json({ message: 'Withdrawal request not found' });
     }
 
-    if (withdrawalRequest.status !== 'imf_required' && withdrawalRequest.status !== 'imf_pending') {
-      return res.status(400).json({ message: 'IMF code can only be confirmed for withdrawals requiring IMF verification or pending IMF confirmation' });
+    if (withdrawalRequest.status !== 'imf_required' && withdrawalRequest.status !== 'vat_pending') {
+      return res.status(400).json({ message: 'VAT code can only be confirmed for withdrawals requiring IMF verification or pending VAT confirmation' });
     }
 
-    // Generate admin IMF code and confirm
-    withdrawalRequest.imfCode.adminGenerated = imfCode.trim();
-    withdrawalRequest.imfCode.adminConfirmedAt = new Date();
-    withdrawalRequest.imfCode.adminConfirmedBy = req.user._id;
+    // Generate admin VAT code and confirm
+    withdrawalRequest.vatCode.adminGenerated = vatCode.trim();
+    withdrawalRequest.vatCode.adminConfirmedAt = new Date();
+    withdrawalRequest.vatCode.adminConfirmedBy = req.user._id;
     withdrawalRequest.status = 'bot_required';
     
     await withdrawalRequest.save();
 
     res.json({
-      message: 'IMF code confirmed successfully. BOT code is now required.',
+      message: 'VAT code confirmed successfully. BOT code is now required.',
       withdrawalRequest: await WithdrawalRequest.findById(req.params.id)
         .populate('user', 'username email balance')
         .populate('processedBy', 'username email')
-        .populate('imfCode.adminConfirmedBy', 'username email')
+        .populate('vatCode.adminConfirmedBy', 'username email')
     });
   } catch (error) {
-    console.error('Error confirming IMF code:', error);
-    res.status(500).json({ message: 'Failed to confirm IMF code' });
+    console.error('Error confirming VAT code:', error);
+    res.status(500).json({ message: 'Failed to confirm VAT code' });
   }
 });
 
@@ -1340,7 +1340,7 @@ router.put('/withdrawal-requests/:id/confirm-bot', async (req, res) => {
       withdrawalRequest: await WithdrawalRequest.findById(req.params.id)
         .populate('user', 'username email balance')
         .populate('processedBy', 'username email')
-        .populate('imfCode.adminConfirmedBy', 'username email')
+        .populate('vatCode.adminConfirmedBy', 'username email')
         .populate('botCode.adminConfirmedBy', 'username email')
     });
   } catch (error) {
@@ -1349,8 +1349,8 @@ router.put('/withdrawal-requests/:id/confirm-bot', async (req, res) => {
   }
 });
 
-// PUT /api/admin/withdrawal-requests/:id/reject-imf - Reject IMF code
-router.put('/withdrawal-requests/:id/reject-imf', async (req, res) => {
+// PUT /api/admin/withdrawal-requests/:id/reject-vat - Reject VAT code
+router.put('/withdrawal-requests/:id/reject-vat', async (req, res) => {
   try {
     const { reason } = req.body;
     
@@ -1365,28 +1365,28 @@ router.put('/withdrawal-requests/:id/reject-imf', async (req, res) => {
       return res.status(404).json({ message: 'Withdrawal request not found' });
     }
 
-    if (withdrawalRequest.status !== 'imf_required' && withdrawalRequest.status !== 'imf_pending') {
-      return res.status(400).json({ message: 'IMF code can only be rejected for withdrawals requiring IMF verification or pending IMF confirmation' });
+    if (withdrawalRequest.status !== 'imf_required' && withdrawalRequest.status !== 'vat_pending') {
+      return res.status(400).json({ message: 'VAT code can only be rejected for withdrawals requiring IMF verification or pending VAT confirmation' });
     }
 
-    // Reject the IMF code
-    withdrawalRequest.imfCode.rejectedAt = new Date();
-    withdrawalRequest.imfCode.rejectedBy = req.user._id;
-    withdrawalRequest.imfCode.rejectionReason = reason.trim();
-    withdrawalRequest.status = 'imf_rejected';
+    // Reject the VAT code
+    withdrawalRequest.vatCode.rejectedAt = new Date();
+    withdrawalRequest.vatCode.rejectedBy = req.user._id;
+    withdrawalRequest.vatCode.rejectionReason = reason.trim();
+    withdrawalRequest.status = 'vat_rejected';
     
     await withdrawalRequest.save();
 
     res.json({
-      message: 'IMF code rejected successfully',
+      message: 'VAT code rejected successfully',
       withdrawalRequest: await WithdrawalRequest.findById(req.params.id)
         .populate('user', 'username email balance')
         .populate('processedBy', 'username email')
-        .populate('imfCode.rejectedBy', 'username email')
+        .populate('vatCode.rejectedBy', 'username email')
     });
   } catch (error) {
-    console.error('Error rejecting IMF code:', error);
-    res.status(500).json({ message: 'Failed to reject IMF code' });
+    console.error('Error rejecting VAT code:', error);
+    res.status(500).json({ message: 'Failed to reject VAT code' });
   }
 });
 

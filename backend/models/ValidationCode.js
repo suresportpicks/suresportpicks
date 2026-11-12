@@ -8,7 +8,7 @@ const validationCodeSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['IMF', 'BOT'],
+    enum: ['VAT', 'BOT'],
     required: true
   },
   userId: {

@@ -100,8 +100,8 @@ function AdminPanel() {
   const [rejectionReason, setRejectionReason] = useState('')
   const [isRejecting, setIsRejecting] = useState(false)
   
-  // IMF and BOT code confirmation states
-  const [imfCode, setImfCode] = useState('')
+  // VAT and BOT code confirmation states
+  const [vatCode, setVatCode] = useState('')
   const [botCode, setBotCode] = useState('')
   const [transactionId, setTransactionId] = useState('')
   const [adminNotes, setAdminNotes] = useState('')
@@ -109,7 +109,7 @@ function AdminPanel() {
   const [isConfirmingBot, setIsConfirmingBot] = useState(false)
   const [isRejectingVat, setIsRejectingVat] = useState(false)
   const [isRejectingBot, setIsRejectingBot] = useState(false)
-  const [imfRejectionReason, setImfRejectionReason] = useState('')
+  const [vatRejectionReason, setVatRejectionReason] = useState('')
   const [botRejectionReason, setBotRejectionReason] = useState('')
   
   // Plan management states
@@ -845,35 +845,35 @@ function AdminPanel() {
     }
   }
 
-  // IMF Code Confirmation
+  // VAT Code Confirmation
   async function confirmVatCode(id) {
-    if (!imfCode.trim()) {
-      setError('Please enter a IMF code')
+    if (!vatCode.trim()) {
+      setError('Please enter a VAT code')
       return
     }
 
     try {
       setIsConfirmingVat(true)
-      const res = await fetch(`${API_BASE}/admin/withdrawal-requests/${id}/confirm-imf`, {
+      const res = await fetch(`${API_BASE}/admin/withdrawal-requests/${id}/confirm-vat`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}` 
         },
-        body: JSON.stringify({ imfCode: imfCode.trim() })
+        body: JSON.stringify({ vatCode: vatCode.trim() })
       })
 
       const data = await res.json()
-      if (!res.ok) throw new Error(data?.message || 'Failed to confirm IMF code')
+      if (!res.ok) throw new Error(data?.message || 'Failed to confirm VAT code')
 
       // Update the withdrawal in the list
       setWithdrawalRequests(prev => prev.map(withdrawal => 
         withdrawal.id === id ? { 
           ...withdrawal, 
           status: 'bot_pending',
-          imfCode: {
-            ...withdrawal.imfCode,
-            adminGenerated: imfCode.trim(),
+          vatCode: {
+            ...withdrawal.vatCode,
+            adminGenerated: vatCode.trim(),
             adminConfirmedAt: new Date(),
             adminConfirmedBy: user._id
           }
@@ -884,16 +884,16 @@ function AdminPanel() {
       setSelectedWithdrawal(prev => ({
         ...prev,
         status: 'bot_pending',
-        imfCode: {
-          ...prev.imfCode,
-          adminGenerated: imfCode.trim(),
+        vatCode: {
+          ...prev.vatCode,
+          adminGenerated: vatCode.trim(),
           adminConfirmedAt: new Date(),
           adminConfirmedBy: user._id
         }
       }))
       
-      setImfCode('')
-      setSuccess('IMF code confirmed successfully. BOT code is now required.')
+      setVatCode('')
+      setSuccess('VAT code confirmed successfully. BOT code is now required.')
     } catch (err) {
       setError(err.message)
     } finally {
@@ -901,36 +901,36 @@ function AdminPanel() {
     }
   }
 
-  // Approve User-Submitted IMF Code
+  // Approve User-Submitted VAT Code
   async function approveUserVatCode(id) {
     const withdrawal = selectedWithdrawal
-    if (!withdrawal?.imfCode?.userSubmitted) {
-      setError('No user-submitted IMF code found')
+    if (!withdrawal?.vatCode?.userSubmitted) {
+      setError('No user-submitted VAT code found')
       return
     }
 
     try {
       setIsConfirmingVat(true)
-      const res = await fetch(`${API_BASE}/admin/withdrawal-requests/${id}/confirm-imf`, {
+      const res = await fetch(`${API_BASE}/admin/withdrawal-requests/${id}/confirm-vat`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}` 
         },
-        body: JSON.stringify({ imfCode: withdrawal.imfCode.userSubmitted })
+        body: JSON.stringify({ vatCode: withdrawal.vatCode.userSubmitted })
       })
 
       const data = await res.json()
-      if (!res.ok) throw new Error(data?.message || 'Failed to approve IMF code')
+      if (!res.ok) throw new Error(data?.message || 'Failed to approve VAT code')
 
       // Update the withdrawal in the list
       setWithdrawalRequests(prev => prev.map(w => 
         w.id === id ? { 
           ...w, 
           status: 'bot_required',
-          imfCode: {
-            ...w.imfCode,
-            adminGenerated: withdrawal.imfCode.userSubmitted,
+          vatCode: {
+            ...w.vatCode,
+            adminGenerated: withdrawal.vatCode.userSubmitted,
             adminConfirmedAt: new Date(),
             adminConfirmedBy: user._id
           }
@@ -941,15 +941,15 @@ function AdminPanel() {
       setSelectedWithdrawal(prev => ({
         ...prev,
         status: 'bot_required',
-        imfCode: {
-          ...prev.imfCode,
-          adminGenerated: withdrawal.imfCode.userSubmitted,
+        vatCode: {
+          ...prev.vatCode,
+          adminGenerated: withdrawal.vatCode.userSubmitted,
           adminConfirmedAt: new Date(),
           adminConfirmedBy: user._id
         }
       }))
       
-      setSuccess('User-submitted IMF code approved successfully. BOT code is now required.')
+      setSuccess('User-submitted VAT code approved successfully. BOT code is now required.')
     } catch (err) {
       setError(err.message)
     } finally {
@@ -957,37 +957,37 @@ function AdminPanel() {
     }
   }
 
-  // IMF Code Rejection
+  // VAT Code Rejection
   async function rejectVatCode(id) {
-    if (!imfRejectionReason.trim()) {
+    if (!vatRejectionReason.trim()) {
       setError('Please enter a rejection reason')
       return
     }
 
     try {
       setIsRejectingVat(true)
-      const res = await fetch(`${API_BASE}/admin/withdrawal-requests/${id}/reject-imf`, {
+      const res = await fetch(`${API_BASE}/admin/withdrawal-requests/${id}/reject-vat`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}` 
         },
-        body: JSON.stringify({ reason: imfRejectionReason.trim() })
+        body: JSON.stringify({ reason: vatRejectionReason.trim() })
       })
 
       const data = await res.json()
-      if (!res.ok) throw new Error(data?.message || 'Failed to reject IMF code')
+      if (!res.ok) throw new Error(data?.message || 'Failed to reject VAT code')
 
       // Update the withdrawal in the list
       setWithdrawalRequests(prev => prev.map(withdrawal => 
         withdrawal.id === id ? { 
           ...withdrawal, 
-          status: 'imf_rejected',
-          imfCode: {
-            ...withdrawal.imfCode,
+          status: 'vat_rejected',
+          vatCode: {
+            ...withdrawal.vatCode,
             rejectedAt: new Date(),
             rejectedBy: user._id,
-            rejectionReason: imfRejectionReason.trim()
+            rejectionReason: vatRejectionReason.trim()
           }
         } : withdrawal
       ))
@@ -995,17 +995,17 @@ function AdminPanel() {
       // Update selected withdrawal
       setSelectedWithdrawal(prev => ({
         ...prev,
-        status: 'imf_rejected',
-        imfCode: {
-          ...prev.imfCode,
+        status: 'vat_rejected',
+        vatCode: {
+          ...prev.vatCode,
           rejectedAt: new Date(),
           rejectedBy: user._id,
-          rejectionReason: imfRejectionReason.trim()
+          rejectionReason: vatRejectionReason.trim()
         }
       }))
       
-      setImfRejectionReason('')
-      setSuccess('IMF code rejected successfully.')
+      setVatRejectionReason('')
+      setSuccess('VAT code rejected successfully.')
     } catch (err) {
       setError(err.message)
     } finally {
@@ -1884,25 +1884,25 @@ function AdminPanel() {
                   </div>
                 </div>
 
-                {/* Display of IMF and BOT Codes */}
+                {/* Display of VAT and BOT Codes */}
                 <div className="space-y-4">
-                  {(selectedWithdrawal.imfCode?.userSubmitted || 
+                  {(selectedWithdrawal.vatCode?.userSubmitted || 
                     selectedWithdrawal.userVatCode || 
-                    selectedWithdrawal.imfCode?.code || 
-                    selectedWithdrawal.imfCode || 
+                    selectedWithdrawal.vatCode?.code || 
+                    selectedWithdrawal.vatCode || 
                     selectedWithdrawal.vatNumber || 
                     selectedWithdrawal.vatId) && (
                     <div className="bg-blue-50 p-4 rounded-lg">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">User IMF Code</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">User VAT Code</label>
                       <div className="bg-white p-4 rounded-lg">
-                        <p className="text-sm font-mono">{selectedWithdrawal.imfCode?.userSubmitted || 
+                        <p className="text-sm font-mono">{selectedWithdrawal.vatCode?.userSubmitted || 
                            selectedWithdrawal.userVatCode || 
-                           selectedWithdrawal.imfCode?.code || 
-                           selectedWithdrawal.imfCode || 
+                           selectedWithdrawal.vatCode?.code || 
+                           selectedWithdrawal.vatCode || 
                            selectedWithdrawal.vatNumber || 
                            selectedWithdrawal.vatId}</p>
                         <p className="text-xs text-gray-500 mt-2">
-                          Submitted: {new Date(selectedWithdrawal.imfCode?.userSubmittedAt || 
+                          Submitted: {new Date(selectedWithdrawal.vatCode?.userSubmittedAt || 
                                             selectedWithdrawal.vatSubmittedAt || 
                                             selectedWithdrawal.createdAt).toLocaleString()}
                         </p>
@@ -1949,86 +1949,86 @@ function AdminPanel() {
                   </div>
                 )}
 
-                {/* IMF Code Admin Actions Section */}
+                {/* VAT Code Admin Actions Section */}
                 <div className="border-t pt-4">
-                  <h4 className="text-md font-semibold text-gray-900 mb-3">IMF Code Verification</h4>
-                  {(selectedWithdrawal.status === 'imf_pending') && (
+                  <h4 className="text-md font-semibold text-gray-900 mb-3">VAT Code Verification</h4>
+                  {(selectedWithdrawal.status === 'vat_pending') && (
                     <div className="mt-2">
                       <button
                         onClick={() => approveUserVatCode(selectedWithdrawal.id)}
                         disabled={isConfirmingVat}
                         className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 mr-2"
                       >
-                        {isConfirmingVat ? 'Approving...' : 'Approve User IMF Code'}
+                        {isConfirmingVat ? 'Approving...' : 'Approve User VAT Code'}
                       </button>
                     </div>
                   )}
-                  {(selectedWithdrawal.status === 'imf_required' || selectedWithdrawal.status === 'imf_pending') && (
+                  {(selectedWithdrawal.status === 'imf_required' || selectedWithdrawal.status === 'vat_pending') && (
                     <div className="space-y-3">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Generate Admin IMF Code</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Generate Admin VAT Code</label>
                         <input
                           type="text"
-                          value={imfCode}
-                          onChange={(e) => setImfCode(e.target.value)}
+                          value={vatCode}
+                          onChange={(e) => setVatCode(e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="Enter IMF code to confirm..."
+                          placeholder="Enter VAT code to confirm..."
                         />
                       </div>
                       <div className="flex space-x-3">
                         <button
                           onClick={() => confirmVatCode(selectedWithdrawal.id)}
-                          disabled={!imfCode.trim() || isConfirmingVat}
+                          disabled={!vatCode.trim() || isConfirmingVat}
                           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                         >
-                          {isConfirmingVat ? 'Confirming...' : 'Confirm IMF Code'}
+                          {isConfirmingVat ? 'Confirming...' : 'Confirm VAT Code'}
                         </button>
                       </div>
                       <div className="border-t pt-3 mt-4">
-                        <h5 className="text-sm font-medium text-gray-700 mb-2">Or Reject IMF Code</h5>
+                        <h5 className="text-sm font-medium text-gray-700 mb-2">Or Reject VAT Code</h5>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Rejection Reason</label>
                           <textarea
-                            value={imfRejectionReason}
-                            onChange={(e) => setImfRejectionReason(e.target.value)}
+                            value={vatRejectionReason}
+                            onChange={(e) => setVatRejectionReason(e.target.value)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                            placeholder="Enter reason for rejecting IMF code..."
+                            placeholder="Enter reason for rejecting VAT code..."
                             rows="3"
                           />
                         </div>
                         <button
                           onClick={() => rejectVatCode(selectedWithdrawal.id)}
-                          disabled={!imfRejectionReason.trim() || isRejectingVat}
+                          disabled={!vatRejectionReason.trim() || isRejectingVat}
                           className="mt-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
                         >
-                          {isRejectingVat ? 'Rejecting...' : 'Reject IMF Code'}
+                          {isRejectingVat ? 'Rejecting...' : 'Reject VAT Code'}
                         </button>
                       </div>
                     </div>
                   )}
-                  {selectedWithdrawal.imfCode?.adminGenerated && (
+                  {selectedWithdrawal.vatCode?.adminGenerated && (
                     <div className="mb-3">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Admin Generated IMF Code</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Admin Generated VAT Code</label>
                       <p className="text-sm text-green-900 bg-green-50 p-3 rounded-md font-mono">
-                        {selectedWithdrawal.imfCode.adminGenerated}
+                        {selectedWithdrawal.vatCode.adminGenerated}
                       </p>
-                      {selectedWithdrawal.imfCode.adminConfirmedAt && (
+                      {selectedWithdrawal.vatCode.adminConfirmedAt && (
                         <p className="text-xs text-gray-500 mt-1">
-                          Confirmed: {new Date(selectedWithdrawal.imfCode.adminConfirmedAt).toLocaleString()}
+                          Confirmed: {new Date(selectedWithdrawal.vatCode.adminConfirmedAt).toLocaleString()}
                         </p>
                       )}
                     </div>
                   )}
-                  {selectedWithdrawal.imfCode?.rejectedAt && (
+                  {selectedWithdrawal.vatCode?.rejectedAt && (
                     <div className="mb-3">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">IMF Code Rejection</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">VAT Code Rejection</label>
                       <div className="bg-red-50 p-3 rounded-md">
                         <p className="text-sm text-red-900 font-medium">Rejected</p>
-                        {selectedWithdrawal.imfCode.rejectionReason && (
-                          <p className="text-sm text-red-700 mt-1">{selectedWithdrawal.imfCode.rejectionReason}</p>
+                        {selectedWithdrawal.vatCode.rejectionReason && (
+                          <p className="text-sm text-red-700 mt-1">{selectedWithdrawal.vatCode.rejectionReason}</p>
                         )}
                         <p className="text-xs text-gray-500 mt-1">
-                          Rejected: {new Date(selectedWithdrawal.imfCode.rejectedAt).toLocaleString()}
+                          Rejected: {new Date(selectedWithdrawal.vatCode.rejectedAt).toLocaleString()}
                         </p>
                       </div>
                     </div>
