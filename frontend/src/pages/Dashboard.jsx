@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
+import LiveGames from '../components/LiveGames'
 import { Link } from 'react-router-dom'
 import {
   Target,
@@ -196,6 +197,8 @@ const Dashboard = () => {
         <h1 className="theme-text-primary text-xl sm:text-2xl font-bold">Welcome back, {user?.name || 'User'}!</h1>
         <p className="theme-text-muted text-sm sm:text-base">Current Plan: <span className="text-blue-600 font-medium">{user?.plan || 'Free'}</span></p>
       </div>
+
+      <LiveGames />
 
       {/* Quick Actions */}
       {dashboardConfig.modules?.showQuickActions !== false && (

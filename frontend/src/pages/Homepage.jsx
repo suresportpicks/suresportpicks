@@ -7,6 +7,7 @@ import HowItWorks from '../components/HowItWorks'
 import TestimonialsSection from '../components/TestimonialsSection'
 import NewsiteCopy from '../components/NewsiteCopy'
 import DynamicHomepageContent from '../components/DynamicHomepageContent'
+import LiveGames from '../components/LiveGames'
 import ContactForm from '../components/ContactForm'
 import Footer from '../components/Footer'
 
@@ -17,6 +18,7 @@ const Homepage = () => {
       
       <main>
         <HeroSection />
+        <LiveGames />
         <NewsiteCopy />
         <AnimatedCounters />
         <DynamicHomepageContent />

@@ -1,27 +1,47 @@
-import React, { useCallback, useEffect, useState } from 'react'
-import { Activity, RefreshCw } from 'lucide-react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { Activity, RefreshCw, Trophy } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 
 const REFRESH_INTERVAL_MS = 60 * 1000
+const FILTERS = [
+  { id: 'ALL', label: 'All games' },
+  { id: 'NBA', label: 'NBA' },
+  { id: 'NFL', label: 'NFL' }
+]
+
+const getTeamMark = (name) => {
+  const words = name.split(/\s+/).filter(Boolean)
+  return words.length > 1
+    ? `${words[0][0]}${words[words.length - 1][0]}`.toUpperCase()
+    : (words[0] || '?').slice(0, 2).toUpperCase()
+}
 
 const LiveGames = () => {
   const { API_BASE } = useAuth()
   const [games, setGames] = useState([])
+  const [activeFilter, setActiveFilter] = useState('ALL')
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState('')
+  const [lastUpdated, setLastUpdated] = useState(null)
 
   const loadGames = useCallback(async (signal) => {
+    setRefreshing(true)
     try {
       const response = await fetch(`${API_BASE}/games/live`, { signal })
       const data = await response.json()
       if (!response.ok) throw new Error(data.message || 'Unable to load live games')
       setGames(data.games || [])
+      setLastUpdated(new Date())
       setError('')
     } catch (loadError) {
       if (loadError.name === 'AbortError') return
       setError(loadError.message)
     } finally {
-      if (!signal?.aborted) setLoading(false)
+      if (!signal?.aborted) {
+        setLoading(false)
+        setRefreshing(false)
+      }
     }
   }, [API_BASE])
 
@@ -35,60 +55,169 @@ const LiveGames = () => {
     }
   }, [loadGames])
 
+  const visibleGames = useMemo(
+    () => activeFilter === 'ALL' ? games : games.filter(game => game.sport === activeFilter),
+    [activeFilter, games]
+  )
+
   return (
-    <section className="py-8 sm:py-10 bg-navy-900/70 border-y border-gold-500/15">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between gap-4 mb-5">
-          <div className="flex items-center gap-3">
-            <Activity className="w-5 h-5 text-red-400" />
-            <h2 className="text-xl sm:text-2xl font-bold text-white">NBA &amp; NFL Live Games</h2>
-            {games.length > 0 && (
-              <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-red-400">
-                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                Live
-              </span>
-            )}
+    <section className="relative isolate overflow-hidden bg-[#080d18] py-12 sm:py-16">
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_50%_0%,rgba(212,175,55,0.12),transparent_58%)]" />
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-7 flex flex-col gap-6 sm:mb-9 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="mb-3 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.24em] text-gold-400">
+              <span className="h-px w-7 bg-gold-500/70" />
+              The live board
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                Scores in <span className="text-gold-400">real time.</span>
+              </h2>
+              {games.length > 0 && (
+                <span className="inline-flex items-center gap-2 rounded-full border border-red-400/20 bg-red-400/[0.08] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-red-300">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-60" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-red-400" />
+                  </span>
+                  Live now
+                </span>
+              )}
+            </div>
+            <p className="mt-2 text-sm text-slate-400 sm:text-base">
+              Follow every play across the NBA and NFL.
+              {lastUpdated && (
+                <span className="ml-2 text-slate-500">
+                  Updated {lastUpdated.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                </span>
+              )}
+            </p>
           </div>
-          <button
-            type="button"
-            onClick={loadGames}
-            disabled={loading}
-            aria-label="Refresh live games"
-            className="p-2 rounded-lg text-gray-300 hover:text-gold-400 hover:bg-navy-800 disabled:opacity-50"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          </button>
+
+          <div className="flex items-center justify-between gap-3 sm:justify-end">
+            <div className="inline-flex rounded-xl border border-white/[0.08] bg-white/[0.03] p-1" aria-label="Filter games by league">
+              {FILTERS.map(filter => (
+                <button
+                  key={filter.id}
+                  type="button"
+                  onClick={() => setActiveFilter(filter.id)}
+                  aria-pressed={activeFilter === filter.id}
+                  className={`rounded-lg px-3 py-2 text-xs font-semibold transition-colors ${
+                    activeFilter === filter.id
+                      ? 'bg-gold-400 text-slate-950 shadow-sm'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {filter.label}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => loadGames()}
+              disabled={refreshing}
+              aria-label="Refresh live scores"
+              className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-2.5 text-slate-300 transition hover:border-gold-400/40 hover:text-gold-300 disabled:opacity-50"
+            >
+              <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
         </div>
 
-        {error ? (
-          <p role="status" className="text-sm text-amber-300">{error}. Please try again later.</p>
-        ) : loading ? (
-          <p className="text-sm text-gray-400">Checking for live games…</p>
-        ) : games.length === 0 ? (
-          <p className="text-sm text-gray-400">No live games right now. Check back during game time.</p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {games.map(game => (
+        {error && games.length > 0 && (
+          <div role="status" className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-400/20 bg-amber-400/[0.06] px-4 py-3 text-sm text-amber-200">
+            <span>Live scores couldn’t be updated. Showing the latest available scores.</span>
+            <button type="button" onClick={() => loadGames()} className="font-semibold underline underline-offset-4">
+              Try again
+            </button>
+          </div>
+        )}
+
+        {loading ? (
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {[0, 1, 2].map(item => (
+              <div key={item} className="h-52 animate-pulse rounded-2xl border border-white/[0.07] bg-white/[0.03]" />
+            ))}
+          </div>
+        ) : visibleGames.length > 0 ? (
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {visibleGames.map(game => (
               <article
                 key={game.id}
-                className="rounded-xl border border-gold-500/20 bg-navy-950/80 p-4"
+                className="group relative overflow-hidden rounded-2xl border border-white/[0.09] bg-gradient-to-br from-[#151d2b] via-[#111825] to-[#0d1420] p-5 shadow-[0_14px_40px_rgba(0,0,0,0.22)] transition duration-300 hover:-translate-y-1 hover:border-gold-400/30 hover:shadow-[0_18px_48px_rgba(0,0,0,0.32)]"
               >
-                <div className="flex justify-between gap-3 text-xs text-gray-400 mb-3">
-                  <span>{game.sport}{game.league ? ` · ${game.league}` : ''}</span>
-                  <span className="text-red-400 font-semibold">{game.clock || game.period || game.status}</span>
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold-400/50 to-transparent opacity-60" />
+                <div className="mb-5 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-gold-400/15 bg-gold-400/[0.08] text-gold-300">
+                      <Trophy className="h-4 w-4" />
+                    </span>
+                    <div>
+                      <p className="text-xs font-bold tracking-wide text-white">{game.sport}</p>
+                      <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500">{game.league || 'Regular season'}</p>
+                    </div>
+                  </div>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-red-400/[0.08] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-red-300">
+                    <Activity className="h-3 w-3" />
+                    {game.status || 'Live'}
+                  </span>
                 </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between gap-3 text-white font-semibold">
-                    <span className="truncate">{game.homeTeam || 'Home'}</span>
-                    <span>{game.homeScore ?? '—'}</span>
-                  </div>
-                  <div className="flex items-center justify-between gap-3 text-white font-semibold">
-                    <span className="truncate">{game.awayTeam || 'Away'}</span>
-                    <span>{game.awayScore ?? '—'}</span>
-                  </div>
+
+                <div className="space-y-3">
+                  {[{ name: game.awayTeam, score: game.awayScore }, { name: game.homeTeam, score: game.homeScore }].map((team, teamIndex) => (
+                    <div key={`${game.id}-${teamIndex}`} className="flex items-center gap-3">
+                      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-extrabold tracking-wide ${
+                        teamIndex === 0
+                          ? 'border border-white/10 bg-white/[0.06] text-slate-200'
+                          : 'border border-gold-400/20 bg-gold-400/[0.08] text-gold-200'
+                      }`}>
+                        {getTeamMark(team.name || 'Team')}
+                      </span>
+                      <span className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-200 sm:text-base">
+                        {team.name || (teamIndex === 0 ? 'Away team' : 'Home team')}
+                      </span>
+                      <span className="min-w-8 text-right text-2xl font-bold tabular-nums tracking-tight text-white">
+                        {team.score ?? '—'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-5 flex items-center justify-between border-t border-white/[0.07] pt-3 text-[11px]">
+                  <span className="font-medium uppercase tracking-[0.14em] text-slate-500">Game in progress</span>
+                  <span className="font-semibold tabular-nums text-gold-300">
+                    {game.period ? `Period ${game.period}` : game.clock || 'Live'}
+                  </span>
                 </div>
               </article>
             ))}
+          </div>
+        ) : error ? (
+          <div role="status" className="flex flex-col items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.025] px-6 py-9 text-center sm:flex-row sm:justify-between sm:text-left">
+            <div>
+              <p className="text-sm font-semibold text-white">Live scores are taking a breather</p>
+              <p className="mt-1 text-xs text-slate-500">We couldn’t reach the scoreboards. Try again in a moment.</p>
+            </div>
+            <button type="button" onClick={() => loadGames()} className="mt-4 rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-slate-300 transition hover:border-gold-400/40 hover:text-gold-300 sm:mt-0">
+              Retry scores
+            </button>
+          </div>
+        ) : (
+          <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-r from-[#121a27] via-[#101725] to-[#121a27] px-6 py-8 sm:px-8">
+            <div className="absolute right-8 top-1/2 hidden -translate-y-1/2 text-gold-400/[0.07] sm:block">
+              <Trophy className="h-24 w-24" />
+            </div>
+            <div className="relative flex items-center gap-4">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-gold-400/15 bg-gold-400/[0.07] text-gold-300">
+                <Activity className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="font-semibold text-white">
+                  {activeFilter === 'ALL' ? 'No games on the board right now' : `No live ${activeFilter} games right now`}
+                </p>
+                <p className="mt-1 text-sm text-slate-400">When the next game tips off or kicks off, you’ll find it here.</p>
+              </div>
+            </div>
           </div>
         )}
       </div>

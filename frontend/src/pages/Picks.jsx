@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Trophy, Clock, TrendingUp, Star, Filter, Calendar, Search } from 'lucide-react'
 import Navbar from '../components/Navbar'
+import LiveGames from '../components/LiveGames'
 import Footer from '../components/Footer'
 
 const Picks = () => {
@@ -154,6 +155,8 @@ const Picks = () => {
           </motion.div>
         </div>
       </section>
+
+      <LiveGames />
 
       {/* Filters and Search */}
       <section className="py-4 sm:py-8 bg-navy-900/50">
