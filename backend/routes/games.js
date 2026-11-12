@@ -34,6 +34,24 @@ const SCOREBOARD_URLS = [
     league: 'NFL',
     sport: 'Football',
     url: 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard'
+  },
+  {
+    leagueId: 'MLB',
+    league: 'MLB',
+    sport: 'Baseball',
+    url: 'https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard'
+  },
+  {
+    leagueId: 'NHL',
+    league: 'NHL',
+    sport: 'Hockey',
+    url: 'https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard'
+  },
+  {
+    leagueId: 'MLS',
+    league: 'MLS',
+    sport: 'Soccer',
+    url: 'https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1/scoreboard'
   }
 ];
 

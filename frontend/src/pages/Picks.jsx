@@ -9,15 +9,6 @@ const Picks = () => {
   const [activeFilter, setActiveFilter] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
 
-  const filters = [
-    { id: 'all', label: 'All Sports', count: 24 },
-    { id: 'nfl', label: 'NFL', count: 8 },
-    { id: 'nba', label: 'NBA', count: 6 },
-    { id: 'mlb', label: 'MLB', count: 5 },
-    { id: 'nhl', label: 'NHL', count: 3 },
-    { id: 'soccer', label: 'Soccer', count: 2 }
-  ]
-
   const picks = [
     {
       id: 1,
@@ -97,6 +88,25 @@ const Picks = () => {
       analysis: 'Home court advantage and injury report',
       image: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80'
     }
+  ]
+
+  const sports = [
+    { id: 'nfl', label: 'NFL' },
+    { id: 'nba', label: 'NBA' },
+    { id: 'wnba', label: 'WNBA' },
+    { id: 'ncaa', label: 'NCAA' },
+    { id: 'nbl', label: 'NBL' },
+    { id: 'mlb', label: 'MLB' },
+    { id: 'nhl', label: 'NHL' },
+    { id: 'mls', label: 'MLS' },
+    { id: 'soccer', label: 'Other Soccer' }
+  ]
+  const filters = [
+    { id: 'all', label: 'All Sports', count: picks.length },
+    ...sports.map(sport => ({
+      ...sport,
+      count: picks.filter(pick => pick.sport.toLowerCase() === sport.id).length
+    }))
   ]
 
   const getStatusColor = (status) => {
@@ -268,6 +278,12 @@ const Picks = () => {
               </motion.div>
             ))}
           </div>
+          {filteredPicks.length === 0 && (
+            <div className="rounded-xl border border-gold-500/20 bg-navy-800/40 px-6 py-10 text-center">
+              <h2 className="text-lg font-semibold text-white">No picks in this sport yet</h2>
+              <p className="mt-2 text-sm text-gray-400">Check back soon for new expert picks.</p>
+            </div>
+          )}
         </div>
       </section>
 

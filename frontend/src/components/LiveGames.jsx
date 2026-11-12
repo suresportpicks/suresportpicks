@@ -9,7 +9,10 @@ const FILTERS = [
   { id: 'WNBA', label: 'WNBA' },
   { id: 'NCAA', label: 'NCAA' },
   { id: 'NBL', label: 'NBL' },
-  { id: 'NFL', label: 'NFL' }
+  { id: 'NFL', label: 'NFL' },
+  { id: 'MLB', label: 'MLB' },
+  { id: 'NHL', label: 'NHL' },
+  { id: 'MLS', label: 'MLS' }
 ]
 
 const getTeamMark = (name) => {
@@ -88,7 +91,7 @@ const LiveGames = () => {
               )}
             </div>
             <p className="mt-2 text-sm text-slate-400 sm:text-base">
-              Basketball’s major leagues, plus NFL action.
+              Live scores from the NBA, WNBA, NCAA, NBL, NFL, MLB, NHL, and MLS.
               {lastUpdated && (
                 <span className="ml-2 text-slate-500">
                   Updated {lastUpdated.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
