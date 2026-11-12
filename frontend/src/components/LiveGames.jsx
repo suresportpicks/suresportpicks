@@ -4,9 +4,11 @@ import { useAuth } from '../context/AuthContext'
 
 const REFRESH_INTERVAL_MS = 60 * 1000
 const FILTERS = [
-  { id: 'ALL', label: 'All games' },
+  { id: 'ALL', label: 'All leagues' },
   { id: 'NBA', label: 'NBA' },
-  { id: 'NFL', label: 'NFL' }
+  { id: 'WNBA', label: 'WNBA' },
+  { id: 'NCAA', label: 'NCAA' },
+  { id: 'NBL', label: 'NBL' }
 ]
 
 const getTeamMark = (name) => {
@@ -56,7 +58,7 @@ const LiveGames = () => {
   }, [loadGames])
 
   const visibleGames = useMemo(
-    () => activeFilter === 'ALL' ? games : games.filter(game => game.sport === activeFilter),
+    () => activeFilter === 'ALL' ? games : games.filter(game => game.leagueId === activeFilter),
     [activeFilter, games]
   )
 
@@ -72,7 +74,7 @@ const LiveGames = () => {
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-                Scores in <span className="text-gold-400">real time.</span>
+                Basketball, <span className="text-gold-400">live.</span>
               </h2>
               {games.length > 0 && (
                 <span className="inline-flex items-center gap-2 rounded-full border border-red-400/20 bg-red-400/[0.08] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-red-300">
@@ -85,7 +87,7 @@ const LiveGames = () => {
               )}
             </div>
             <p className="mt-2 text-sm text-slate-400 sm:text-base">
-              Follow every play across the NBA and NFL.
+              Live scores from the NBA, WNBA, NCAA, and Australia’s NBL.
               {lastUpdated && (
                 <span className="ml-2 text-slate-500">
                   Updated {lastUpdated.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}

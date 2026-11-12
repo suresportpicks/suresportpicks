@@ -188,7 +188,7 @@ SURESPORTPICKS/
 - `DELETE /api/admin/picks/:id` - Delete pick
 
 ### Live Games
-- `GET /api/games/live` - Get current live NBA and NFL scores (cached for one minute)
+- `GET /api/games/live` - Get current live NBA, WNBA, NCAA men's and women's, and NBL scores (cached for one minute)
 
 ## 🔒 Security Features
 
