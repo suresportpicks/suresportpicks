@@ -21,6 +21,19 @@ function getTeamName(value) {
   return value?.name || value?.team_name || value?.full_name || '';
 }
 
+function getLeagueName(game) {
+  const league = game.league ?? game.competition;
+  if (typeof league === 'string') return league;
+  return game.league_name || league?.name || league?.slug || '';
+}
+
+function getLeaguePriority(game) {
+  const league = getLeagueName(game).toUpperCase().replace(/[^A-Z0-9]+/g, ' ');
+  if (/\bNBA\b/.test(league)) return 0;
+  if (/\bNCAA(?:B)?\b/.test(league)) return 1;
+  return -1;
+}
+
 function normalizeGame(game, sport, fallbackStatus) {
   const score = game.score || {};
   const home = game.home_team ?? game.homeTeam ?? game.home ?? game.teams?.home;
@@ -29,7 +42,7 @@ function normalizeGame(game, sport, fallbackStatus) {
   return {
     id: `${sport}-${game.id ?? game.game_id ?? `${getTeamName(home)}-${getTeamName(away)}`}`,
     sport,
-    league: game.league_name || game.league?.name || game.league || game.competition?.name || game.competition || '',
+    league: getLeagueName(game),
     homeTeam: getTeamName(home) || game.home_team_name || game.home_name || '',
     awayTeam: getTeamName(away) || game.away_team_name || game.away_name || '',
     homeScore: game.home_score ?? game.home_points ?? game.homeScore ?? score.home ?? null,
@@ -50,29 +63,20 @@ async function fetchProviderGames() {
   }
 
   const headers = { 'X-Api-Key': apiKey };
-  const date = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Europe/Paris',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  }).format(new Date());
+  const response = await axios.get('https://sportapi.ai/api/basketball/games/live', {
+    headers,
+    timeout: 10000
+  });
 
-  const [footballResponse, basketballResponse] = await Promise.all([
-    axios.get(`https://sportapi.ai/api/fixtures/date/${date}`, { headers, timeout: 10000 }),
-    axios.get('https://sportapi.ai/api/basketball/games/live', { headers, timeout: 10000 })
-  ]);
-
-  if (footballResponse.data?.success === false || basketballResponse.data?.success === false) {
+  if (response.data?.success === false) {
     throw new Error('SportAPI returned an unsuccessful response');
   }
 
-  const footballGames = getItems(footballResponse.data)
-    .filter(game => ['LIVE', 'HT'].includes(String(game.status).toUpperCase()))
-    .map(game => normalizeGame(game, 'Soccer', 'LIVE'));
-  const basketballGames = getItems(basketballResponse.data)
-    .map(game => normalizeGame(game, 'Basketball', 'LIVE'));
-
-  return [...footballGames, ...basketballGames];
+  return getItems(response.data)
+    .map(game => ({ game, priority: getLeaguePriority(game) }))
+    .filter(({ priority }) => priority >= 0)
+    .sort((a, b) => a.priority - b.priority)
+    .map(({ game }) => normalizeGame(game, 'Basketball', 'LIVE'));
 }
 
 router.get('/live', async (req, res) => {

@@ -153,7 +153,7 @@ SURESPORTPICKS/
 - `FRONTEND_URL`: https://your-frontend-domain.com
 - `MONGODB_URI`: Your production MongoDB URI
 - `JWT_SECRET`: Strong secret key (32+ characters)
-- `SPORTAPI_API_KEY`: SportAPI key for live soccer and basketball scores. Keep this backend-only; live games stay unavailable until configured.
+- `SPORTAPI_API_KEY`: Backend-only SportAPI key for live NBA and NCAA basketball scores. Live games stay unavailable until configured.
 - `EMAIL_HOST`: smtp.gmail.com
 - `EMAIL_PORT`: 587
 - `EMAIL_USER`: Your production email
@@ -190,7 +190,7 @@ SURESPORTPICKS/
 - `DELETE /api/admin/picks/:id` - Delete pick
 
 ### Live Games
-- `GET /api/games/live` - Get current live soccer and basketball scores (cached for five minutes)
+- `GET /api/games/live` - Get current live NBA and NCAA basketball scores, with NBA first (cached for five minutes)
 
 ## 🔒 Security Features
 
