@@ -59,6 +59,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/suresport
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/picks', require('./routes/picks'));
+app.use('/api/games', require('./routes/games'));
 app.use('/api/plans', require('./routes/plans'));
 app.use('/api/payments', require('./routes/payments'));
 app.use('/api/contact', require('./routes/contact'));

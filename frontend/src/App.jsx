@@ -2,6 +2,7 @@ import React from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
+import LiveGames from './components/LiveGames'
 import ProtectedRoute from './components/ProtectedRoute'
 import AdminRoute from './components/AdminRoute'
 import DashboardLayout from './components/DashboardLayout'
@@ -36,6 +37,7 @@ function App() {
       <AuthProvider>
         <Router>
         <div className="App min-h-screen app-bg app-text">
+          <LiveGames />
           <Routes>
             <Route path="/" element={<Homepage />} />
             <Route path="/analytics" element={<Analytics />} />
