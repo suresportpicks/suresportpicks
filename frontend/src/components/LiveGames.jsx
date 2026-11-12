@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { Activity, RefreshCw } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 
-const REFRESH_INTERVAL_MS = 5 * 60 * 1000
+const REFRESH_INTERVAL_MS = 60 * 1000
 
 const LiveGames = () => {
   const { API_BASE } = useAuth()
@@ -41,7 +41,7 @@ const LiveGames = () => {
         <div className="flex items-center justify-between gap-4 mb-5">
           <div className="flex items-center gap-3">
             <Activity className="w-5 h-5 text-red-400" />
-            <h2 className="text-xl sm:text-2xl font-bold text-white">NBA &amp; NCAA Live Games</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-white">NBA &amp; NFL Live Games</h2>
             {games.length > 0 && (
               <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-red-400">
                 <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
