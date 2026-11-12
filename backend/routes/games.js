@@ -58,6 +58,20 @@ const SCOREBOARD_URLS = [
 let cache = { expiresAt: 0, games: null };
 let requestInFlight = null;
 
+function getScoreboardDates() {
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+  const formatDate = date => new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).format(date).replace(/-/g, '');
+
+  return [formatDate(today), formatDate(tomorrow)];
+}
+
 function normalizeGame(event, scoreboard) {
   const competition = event.competitions?.[0];
   const competitors = competition?.competitors || [];
@@ -77,53 +91,89 @@ function normalizeGame(event, scoreboard) {
     awayScore: away?.score ?? null,
     status: statusType.shortDetail || statusType.detail || statusType.name || 'LIVE',
     clock: status?.displayClock || '',
-    period: status?.period || null
+    period: status?.period || null,
+    startTime: event.date || null
   };
 }
 
 async function fetchProviderGames() {
+  const dates = getScoreboardDates();
   const results = await Promise.allSettled(
     SCOREBOARD_URLS.map(async scoreboard => {
-      const { url } = scoreboard;
-      const response = await axios.get(url, { timeout: 10000 });
-      if (!Array.isArray(response.data?.events)) {
-        throw new Error(`${scoreboard.league} scoreboard returned an invalid response`);
+      const dailyResults = await Promise.allSettled(
+        dates.map(async date => {
+          const response = await axios.get(`${scoreboard.url}?dates=${date}`, { timeout: 10000 });
+          if (!Array.isArray(response.data?.events)) {
+            throw new Error(`${scoreboard.league} scoreboard returned an invalid response`);
+          }
+          return response.data.events;
+        })
+      );
+      const events = dailyResults
+        .filter(result => result.status === 'fulfilled')
+        .flatMap(result => result.value);
+
+      if (events.length === 0 && dailyResults.every(result => result.status === 'rejected')) {
+        throw new Error(`${scoreboard.league} scoreboard unavailable`);
       }
 
-      return response.data.events
-        .filter(event => {
-          const state = event.competitions?.[0]?.status?.type?.state || event.status?.type?.state;
-          return state === 'in';
-        })
-        .map(event => normalizeGame(event, scoreboard));
+      return events.map(event => {
+        const state = event.competitions?.[0]?.status?.type?.state || event.status?.type?.state;
+        return { game: normalizeGame(event, scoreboard), state };
+      });
     })
   );
 
-  const failedSports = results
+  const failedLeagues = results
     .map((result, index) => result.status === 'rejected' ? SCOREBOARD_URLS[index].league : null)
     .filter(Boolean);
-  if (failedSports.length === results.length) {
-    throw new Error(`Scoreboards unavailable for ${failedSports.join(', ')}`);
+  if (failedLeagues.length === results.length) {
+    throw new Error(`Scoreboards unavailable for ${failedLeagues.join(', ')}`);
   }
-  if (failedSports.length) {
-    console.error(`Scoreboards unavailable for: ${failedSports.join(', ')}`);
+  if (failedLeagues.length) {
+    console.error(`Scoreboards unavailable for: ${failedLeagues.join(', ')}`);
   }
 
-  return results
+  const games = results
     .filter(result => result.status === 'fulfilled')
     .flatMap(result => result.value);
+  const liveGames = games.filter(({ state }) => state === 'in').map(({ game }) => game);
+  const upcomingGames = games
+    .filter(({ state }) => state === 'pre')
+    .map(({ game }) => game)
+    .sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+
+  return { liveGames, upcomingGames };
 }
 
-router.get('/live', async (req, res) => {
+router.get('/', async (req, res) => {
   if (cache.games && cache.expiresAt > Date.now()) {
-    return res.json({ games: cache.games });
+    return res.json(cache.games);
   }
 
   const request = requestInFlight || (requestInFlight = fetchProviderGames());
   try {
-    const games = await request;
-    cache = { games, expiresAt: Date.now() + CACHE_DURATION_MS };
-    return res.json({ games });
+    const result = await request;
+    cache = { games: result, expiresAt: Date.now() + CACHE_DURATION_MS };
+    return res.json(result);
+  } catch (error) {
+    console.error('Live games fetch error:', error.message);
+    return res.status(502).json({ message: 'Unable to load game schedules' });
+  } finally {
+    if (requestInFlight === request) requestInFlight = null;
+  }
+});
+
+router.get('/live', async (req, res) => {
+  if (cache.games && cache.expiresAt > Date.now()) {
+    return res.json({ games: cache.games.liveGames });
+  }
+
+  const request = requestInFlight || (requestInFlight = fetchProviderGames());
+  try {
+    const result = await request;
+    cache = { games: result, expiresAt: Date.now() + CACHE_DURATION_MS };
+    return res.json({ games: result.liveGames });
   } catch (error) {
     console.error('Live games fetch error:', error.message);
     return res.status(502).json({ message: 'Unable to load live games' });

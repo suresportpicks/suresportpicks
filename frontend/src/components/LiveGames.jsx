@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { Activity, RefreshCw, Trophy } from 'lucide-react'
+import { Activity, CalendarClock, RefreshCw, Trophy } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 
 const REFRESH_INTERVAL_MS = 60 * 1000
@@ -24,7 +24,8 @@ const getTeamMark = (name) => {
 
 const LiveGames = () => {
   const { API_BASE } = useAuth()
-  const [games, setGames] = useState([])
+  const [games, setGames] = useState({ liveGames: [], upcomingGames: [] })
+  const [activeView, setActiveView] = useState('upcoming')
   const [activeFilter, setActiveFilter] = useState('ALL')
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -34,10 +35,13 @@ const LiveGames = () => {
   const loadGames = useCallback(async (signal) => {
     setRefreshing(true)
     try {
-      const response = await fetch(`${API_BASE}/games/live`, { signal })
+      const response = await fetch(`${API_BASE}/games`, { signal })
       const data = await response.json()
-      if (!response.ok) throw new Error(data.message || 'Unable to load live games')
-      setGames(data.games || [])
+      if (!response.ok) throw new Error(data.message || 'Unable to load game schedules')
+      setGames({
+        liveGames: data.liveGames || [],
+        upcomingGames: data.upcomingGames || []
+      })
       setLastUpdated(new Date())
       setError('')
     } catch (loadError) {
@@ -62,8 +66,13 @@ const LiveGames = () => {
   }, [loadGames])
 
   const visibleGames = useMemo(
-    () => activeFilter === 'ALL' ? games : games.filter(game => game.leagueId === activeFilter),
-    [activeFilter, games]
+    () => {
+      const gamesForView = activeView === 'live' ? games.liveGames : games.upcomingGames
+      return activeFilter === 'ALL'
+        ? gamesForView
+        : gamesForView.filter(game => game.leagueId === activeFilter)
+    },
+    [activeFilter, activeView, games]
   )
 
   return (
@@ -78,9 +87,9 @@ const LiveGames = () => {
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-                Live <span className="text-gold-400">scores.</span>
+                Live &amp; <span className="text-gold-400">upcoming.</span>
               </h2>
-              {games.length > 0 && (
+              {games.liveGames.length > 0 && (
                 <span className="inline-flex items-center gap-2 rounded-full border border-red-400/20 bg-red-400/[0.08] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-red-300">
                   <span className="relative flex h-2 w-2">
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-60" />
@@ -91,7 +100,7 @@ const LiveGames = () => {
               )}
             </div>
             <p className="mt-2 text-sm text-slate-400 sm:text-base">
-              Live scores from the NBA, WNBA, NCAA, NBL, NFL, MLB, NHL, and MLS.
+              Follow live scores and upcoming games across every league.
               {lastUpdated && (
                 <span className="ml-2 text-slate-500">
                   Updated {lastUpdated.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
@@ -101,7 +110,7 @@ const LiveGames = () => {
           </div>
 
           <div className="flex items-center justify-between gap-3 sm:justify-end">
-            <div className="inline-flex rounded-xl border border-white/[0.08] bg-white/[0.03] p-1" aria-label="Filter games by league">
+            <div className="inline-flex max-w-full overflow-x-auto rounded-xl border border-white/[0.08] bg-white/[0.03] p-1" aria-label="Filter games by league">
               {FILTERS.map(filter => (
                 <button
                   key={filter.id}
@@ -130,14 +139,40 @@ const LiveGames = () => {
           </div>
         </div>
 
-        {error && games.length > 0 && (
+        {error && (games.liveGames.length > 0 || games.upcomingGames.length > 0) && (
           <div role="status" className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-400/20 bg-amber-400/[0.06] px-4 py-3 text-sm text-amber-200">
-            <span>Live scores couldn’t be updated. Showing the latest available scores.</span>
+            <span>Game schedules couldn’t be updated. Showing the latest available games.</span>
             <button type="button" onClick={() => loadGames()} className="font-semibold underline underline-offset-4">
               Try again
             </button>
           </div>
         )}
+
+        <div className="mb-5 flex flex-wrap items-center gap-2" aria-label="Choose live or upcoming games">
+          {[
+            { id: 'upcoming', label: 'Upcoming', count: games.upcomingGames.length, icon: CalendarClock },
+            { id: 'live', label: 'Live now', count: games.liveGames.length, icon: Activity }
+          ].map(view => {
+            const Icon = view.icon
+            return (
+              <button
+                key={view.id}
+                type="button"
+                onClick={() => setActiveView(view.id)}
+                aria-pressed={activeView === view.id}
+                className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold transition-colors ${
+                  activeView === view.id
+                    ? 'border-gold-400/30 bg-gold-400/[0.08] text-gold-200'
+                    : 'border-white/[0.07] bg-white/[0.02] text-slate-400 hover:text-white'
+                }`}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {view.label}
+                <span className="rounded-full bg-black/20 px-1.5 py-0.5 text-[10px] tabular-nums">{view.count}</span>
+              </button>
+            )
+          })}
+        </div>
 
         {loading ? (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -163,9 +198,11 @@ const LiveGames = () => {
                       <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500">{game.league || 'Regular season'}</p>
                     </div>
                   </div>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-red-400/[0.08] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-red-300">
-                    <Activity className="h-3 w-3" />
-                    {game.status || 'Live'}
+                  <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${
+                    activeView === 'live' ? 'bg-red-400/[0.08] text-red-300' : 'bg-gold-400/[0.08] text-gold-200'
+                  }`}>
+                    {activeView === 'live' ? <Activity className="h-3 w-3" /> : <CalendarClock className="h-3 w-3" />}
+                    {activeView === 'live' ? (game.status || 'Live') : 'Scheduled'}
                   </span>
                 </div>
 
@@ -190,9 +227,21 @@ const LiveGames = () => {
                 </div>
 
                 <div className="mt-5 flex items-center justify-between border-t border-white/[0.07] pt-3 text-[11px]">
-                  <span className="font-medium uppercase tracking-[0.14em] text-slate-500">Game in progress</span>
+                  <span className="font-medium uppercase tracking-[0.14em] text-slate-500">
+                    {activeView === 'live' ? 'Game in progress' : 'Starts'}
+                  </span>
                   <span className="font-semibold tabular-nums text-gold-300">
-                    {game.period ? `Period ${game.period}` : game.clock || 'Live'}
+                    {activeView === 'live'
+                      ? (game.period ? `Period ${game.period}` : game.clock || 'Live')
+                      : (game.startTime
+                          ? new Date(game.startTime).toLocaleString([], {
+                              weekday: 'short',
+                              month: 'short',
+                              day: 'numeric',
+                              hour: 'numeric',
+                              minute: '2-digit'
+                            })
+                          : 'Time TBA')}
                   </span>
                 </div>
               </article>
@@ -219,9 +268,15 @@ const LiveGames = () => {
               </span>
               <div>
                 <p className="font-semibold text-white">
-                  {activeFilter === 'ALL' ? 'No games on the board right now' : `No live ${activeFilter} games right now`}
+                  {activeView === 'upcoming'
+                    ? (activeFilter === 'ALL' ? 'No upcoming games scheduled' : `No upcoming ${activeFilter} games scheduled`)
+                    : (activeFilter === 'ALL' ? 'No games on the board right now' : `No live ${activeFilter} games right now`)}
                 </p>
-                <p className="mt-1 text-sm text-slate-400">When the next game tips off or kicks off, you’ll find it here.</p>
+                <p className="mt-1 text-sm text-slate-400">
+                  {activeView === 'upcoming'
+                    ? 'Check back soon as new games are added to the schedule.'
+                    : 'When the next game tips off or kicks off, you’ll find it here.'}
+                </p>
               </div>
             </div>
           </div>
