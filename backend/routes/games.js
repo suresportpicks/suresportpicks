@@ -28,6 +28,12 @@ const SCOREBOARD_URLS = [
     leagueId: 'NBL',
     league: 'NBL',
     url: 'https://site.api.espn.com/apis/site/v2/sports/basketball/nbl/scoreboard'
+  },
+  {
+    leagueId: 'NFL',
+    league: 'NFL',
+    sport: 'Football',
+    url: 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard'
   }
 ];
 
@@ -44,7 +50,7 @@ function normalizeGame(event, scoreboard) {
 
   return {
     id: `${scoreboard.leagueId}-${event.id}`,
-    sport: 'Basketball',
+    sport: scoreboard.sport || 'Basketball',
     leagueId: scoreboard.leagueId,
     league: scoreboard.league,
     homeTeam: home?.team?.displayName || home?.team?.name || '',
@@ -79,10 +85,10 @@ async function fetchProviderGames() {
     .map((result, index) => result.status === 'rejected' ? SCOREBOARD_URLS[index].league : null)
     .filter(Boolean);
   if (failedSports.length === results.length) {
-    throw new Error(`Basketball scoreboards unavailable for ${failedSports.join(', ')}`);
+    throw new Error(`Scoreboards unavailable for ${failedSports.join(', ')}`);
   }
   if (failedSports.length) {
-    console.error(`Basketball scoreboards unavailable for: ${failedSports.join(', ')}`);
+    console.error(`Scoreboards unavailable for: ${failedSports.join(', ')}`);
   }
 
   return results

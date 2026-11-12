@@ -8,7 +8,8 @@ const FILTERS = [
   { id: 'NBA', label: 'NBA' },
   { id: 'WNBA', label: 'WNBA' },
   { id: 'NCAA', label: 'NCAA' },
-  { id: 'NBL', label: 'NBL' }
+  { id: 'NBL', label: 'NBL' },
+  { id: 'NFL', label: 'NFL' }
 ]
 
 const getTeamMark = (name) => {
@@ -74,7 +75,7 @@ const LiveGames = () => {
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-                Basketball, <span className="text-gold-400">live.</span>
+                Live <span className="text-gold-400">scores.</span>
               </h2>
               {games.length > 0 && (
                 <span className="inline-flex items-center gap-2 rounded-full border border-red-400/20 bg-red-400/[0.08] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-red-300">
@@ -87,7 +88,7 @@ const LiveGames = () => {
               )}
             </div>
             <p className="mt-2 text-sm text-slate-400 sm:text-base">
-              Live scores from the NBA, WNBA, NCAA, and Australia’s NBL.
+              Basketball’s major leagues, plus NFL action.
               {lastUpdated && (
                 <span className="ml-2 text-slate-500">
                   Updated {lastUpdated.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
