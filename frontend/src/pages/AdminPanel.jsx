@@ -175,10 +175,6 @@ function AdminPanel() {
         transactionsRes.json(), ticketsRes.json(), picksRes.json(), statsRes.json(), depositsRes.json(), paymentOptionsRes.json(), withdrawalsRes.json(), plansRes.json()
       ])
 
-      // Debug withdrawal requests
-      console.log('Withdrawals Response Status:', withdrawalsRes.ok, withdrawalsRes.status)
-      console.log('Withdrawals Data:', withdrawalsData)
-
       if (usersRes.ok) {
         setUsers(usersData.users || [])
         setUserStats({
@@ -721,13 +717,6 @@ function AdminPanel() {
 
   // Withdrawal Management Functions
   function openWithdrawalModal(withdrawal) {
-    console.log('Opening withdrawal modal with:', withdrawal);
-    console.log('Withdrawal ID:', withdrawal?.id);
-    console.log('Withdrawal keys:', Object.keys(withdrawal || {}));
-    
-    // Visible debugging
-    alert(`DEBUG: Opening withdrawal modal\nID: ${withdrawal?.id}\nKeys: ${Object.keys(withdrawal || {}).join(', ')}\nStatus: ${withdrawal?.status}`);
-    
     setSelectedWithdrawal(withdrawal)
     setRejectionReason('')
     setImfCode('')
@@ -3060,6 +3049,7 @@ function AdminPanel() {
                       )}
                       <button
                         key={`view-${withdrawal.id}`}
+                        type="button"
                         onClick={() => openWithdrawalModal(withdrawal)}
                         className="text-gray-600 hover:text-gray-900"
                         title="View Details"
