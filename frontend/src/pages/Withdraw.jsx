@@ -1099,7 +1099,7 @@ const Withdraw = () => {
               <div className="p-6">
                 <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">IMF Code Required</h3>
                 <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-md p-3 mb-4">
-                  An IMF verification code is required for this withdrawal to continue. Contact customer care to receive it; after verification, you will be prompted for the BOT code. This is a verification code, not a tax or fee.
+                  An IMF verification code is required for this withdrawal to continue. Contact customer care to receive it.
                 </p>
 
                 <div className="mb-4">
