@@ -827,6 +827,7 @@ router.post('/withdrawal/:id/bot-code', authenticateToken, async (req, res) => {
 
     withdrawalRequest.set('botCode.userSubmitted', botCode.trim());
     withdrawalRequest.set('botCode.userSubmittedAt', new Date());
+    withdrawalRequest.previousStatus = withdrawalRequest.status;
     withdrawalRequest.status = 'processing';
     
     await withdrawalRequest.save();

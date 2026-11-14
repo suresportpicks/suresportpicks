@@ -817,10 +817,44 @@ function AdminPanel() {
 
       // Update the withdrawal in the list
       setWithdrawalRequests(prev => prev.map(withdrawal => 
-        withdrawal.id === id ? { ...withdrawal, status: 'processing', processedBy: user._id, processedAt: new Date() } : withdrawal
+        withdrawal.id === id
+          ? { ...withdrawal, previousStatus: withdrawal.status, status: 'processing', processedBy: user._id, processedAt: new Date() }
+          : withdrawal
       ))
       
       setSuccess('Withdrawal marked as processing')
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  async function returnWithdrawalToPreviousState(id) {
+    if (!confirm('Return this withdrawal to its previous status?')) return
+
+    try {
+      setError('')
+      const res = await fetch(`${API_BASE}/admin/withdrawal-requests/${id}/revert-processing`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}` }
+      })
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data?.message || 'Failed to restore the previous withdrawal status')
+
+      const revertedRequest = data.withdrawalRequest
+      const updatedWithdrawal = {
+        status: revertedRequest.status,
+        previousStatus: undefined,
+        processedBy: null,
+        processedAt: null,
+        botCode: revertedRequest.botCode
+      }
+
+      setWithdrawalRequests(prev => prev.map(withdrawal =>
+        withdrawal.id === id ? { ...withdrawal, ...updatedWithdrawal } : withdrawal
+      ))
+      setSelectedWithdrawal(prev => prev?.id === id ? { ...prev, ...updatedWithdrawal } : prev)
+      setSuccess(`Withdrawal returned to ${revertedRequest.status === 'bot_required' ? 'BOT Required' : revertedRequest.status}`)
     } catch (err) {
       setError(err.message)
     }
@@ -1822,6 +1856,14 @@ function AdminPanel() {
                 >
                   Close
                 </button>
+                {selectedWithdrawal?.status === 'processing' && (
+                  <button
+                    onClick={() => returnWithdrawalToPreviousState(selectedWithdrawal.id)}
+                    className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700"
+                  >
+                    Return to Previous State
+                  </button>
+                )}
                 
                 {ACTIONABLE_WITHDRAWAL_STATUSES.includes(selectedWithdrawal?.status) && (
                   <div className="flex space-x-3">
@@ -3098,14 +3140,26 @@ function AdminPanel() {
                         </button>
                       )}
                       {withdrawal.status === 'processing' && (
-                        <button
-                          key={`complete-processing-${withdrawal.id}`}
-                          onClick={() => markWithdrawalAsCompleted(withdrawal.id)}
-                          className="text-green-600 hover:text-green-900"
-                          title="Mark as Completed"
-                        >
-                          <CheckCircle className="w-4 h-4" />
-                        </button>
+                        <>
+                          <button
+                            key={`revert-processing-${withdrawal.id}`}
+                            type="button"
+                            onClick={() => returnWithdrawalToPreviousState(withdrawal.id)}
+                            className="text-orange-600 hover:text-orange-900"
+                            title="Return to Previous State"
+                          >
+                            <ArrowLeft className="w-4 h-4" />
+                          </button>
+                          <button
+                            key={`complete-processing-${withdrawal.id}`}
+                            type="button"
+                            onClick={() => markWithdrawalAsCompleted(withdrawal.id)}
+                            className="text-green-600 hover:text-green-900"
+                            title="Mark as Completed"
+                          >
+                            <CheckCircle className="w-4 h-4" />
+                          </button>
+                        </>
                       )}
                       <button
                         key={`view-${withdrawal.id}`}

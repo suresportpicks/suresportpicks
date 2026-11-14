@@ -832,6 +832,7 @@ router.get('/withdrawal-requests', async (req, res) => {
         paymentMethod: request.paymentMethod,
         paymentDetails: request.paymentDetails,
         status: request.status,
+        previousStatus: request.previousStatus,
         createdAt: request.createdAt,
         updatedAt: request.updatedAt,
         processedBy: request.processedBy,
@@ -1023,6 +1024,61 @@ router.put('/withdrawal-requests/:id/process', async (req, res) => {
   } catch (error) {
     console.error('Error marking withdrawal as processing:', error);
     res.status(500).json({ message: 'Failed to mark withdrawal as processing' });
+  }
+});
+
+// PUT /api/admin/withdrawal-requests/:id/revert-processing - Restore the prior status
+router.put('/withdrawal-requests/:id/revert-processing', async (req, res) => {
+  try {
+    const withdrawalRequest = await WithdrawalRequest.findById(req.params.id);
+
+    if (!withdrawalRequest) {
+      return res.status(404).json({ message: 'Withdrawal request not found' });
+    }
+
+    if (withdrawalRequest.status !== 'processing') {
+      return res.status(400).json({ message: 'Only processing withdrawals can be returned to their previous status' });
+    }
+
+    const hasSubmittedVerificationCodes = Boolean(
+      withdrawalRequest.imfCode?.userSubmitted && withdrawalRequest.botCode?.userSubmitted
+    );
+    const previousStatus = withdrawalRequest.previousStatus ||
+      (hasSubmittedVerificationCodes ? 'bot_required' : 'pending');
+    const allowedPreviousStatuses = ['pending', 'vat_pending', 'vat_rejected', 'bot_required', 'bot_pending'];
+
+    if (!allowedPreviousStatuses.includes(previousStatus)) {
+      return res.status(400).json({ message: 'The previous withdrawal status cannot be restored' });
+    }
+
+    const fieldsToUnset = { previousStatus: 1 };
+    if (previousStatus === 'bot_required') {
+      fieldsToUnset['botCode.userSubmitted'] = 1;
+      fieldsToUnset['botCode.userSubmittedAt'] = 1;
+    }
+
+    const revertedRequest = await WithdrawalRequest.findOneAndUpdate(
+      { _id: req.params.id, status: 'processing' },
+      {
+        $set: { status: previousStatus, processedBy: null, processedAt: null },
+        $unset: fieldsToUnset
+      },
+      { new: true }
+    )
+      .populate('user', 'username email balance')
+      .populate('processedBy', 'username email');
+
+    if (!revertedRequest) {
+      return res.status(409).json({ message: 'Withdrawal status changed before it could be reverted' });
+    }
+
+    res.json({
+      message: `Withdrawal returned to ${previousStatus}`,
+      withdrawalRequest: revertedRequest
+    });
+  } catch (error) {
+    console.error('Error reverting withdrawal status:', error);
+    res.status(500).json({ message: 'Failed to restore the previous withdrawal status' });
   }
 });
 

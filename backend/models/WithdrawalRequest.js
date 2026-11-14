@@ -62,6 +62,10 @@ const withdrawalRequestSchema = new mongoose.Schema({
     enum: ['pending', 'imf_required', 'vat_pending', 'vat_rejected', 'bot_required', 'bot_pending', 'bot_rejected', 'approved', 'rejected', 'processing', 'completed'],
     default: 'imf_required'
   },
+  previousStatus: {
+    type: String,
+    enum: ['pending', 'vat_pending', 'vat_rejected', 'bot_required', 'bot_pending']
+  },
   // Verification codes
   imfCode: {
     userSubmitted: {
@@ -285,6 +289,7 @@ withdrawalRequestSchema.methods.reject = async function(adminId, reason) {
 
 // Method to mark as processing
 withdrawalRequestSchema.methods.markAsProcessing = async function(adminId, notes = null) {
+  this.previousStatus = this.status;
   this.status = 'processing';
   this.processedBy = adminId;
   this.processedAt = new Date();
