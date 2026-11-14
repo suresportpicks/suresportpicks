@@ -99,6 +99,8 @@ function AdminPanel() {
   const [withdrawalRequests, setWithdrawalRequests] = useState([])
   const [selectedWithdrawal, setSelectedWithdrawal] = useState(null)
   const [showWithdrawalModal, setShowWithdrawalModal] = useState(false)
+  const [showCodeIssueModal, setShowCodeIssueModal] = useState(false)
+  const [codeIssueType, setCodeIssueType] = useState(null)
   const [rejectionReason, setRejectionReason] = useState('')
   const [isRejecting, setIsRejecting] = useState(false)
   
@@ -717,12 +719,22 @@ function AdminPanel() {
 
   // Withdrawal Management Functions
   function openWithdrawalModal(withdrawal) {
+    alert(`DEBUG: Opening withdrawal modal\nID: ${withdrawal?.id}\nKeys: ${Object.keys(withdrawal || {}).join(', ')}\nStatus: ${withdrawal?.status}`)
     setSelectedWithdrawal(withdrawal)
     setRejectionReason('')
     setImfCode('')
     setBotCode('')
     setBotRejectionReason('')
     setShowWithdrawalModal(true)
+  }
+
+  function openCodeIssueModal(withdrawal, codeType) {
+    setSelectedWithdrawal(withdrawal)
+    setCodeIssueType(codeType)
+    setImfCode('')
+    setBotCode('')
+    setError('')
+    setShowCodeIssueModal(true)
   }
 
   async function approveWithdrawal(id) {
@@ -922,6 +934,7 @@ function AdminPanel() {
         imfCode: { ...prev.imfCode, adminGenerated: imfCode.trim(), adminIssuedAt: new Date(), adminIssuedBy: user._id }
       }))
       setImfCode('')
+      setShowCodeIssueModal(false)
       setSuccess('IMF code issued. Share it with the customer.')
     } catch (err) {
       setError(err.message)
@@ -962,6 +975,7 @@ function AdminPanel() {
         botCode: { ...prev.botCode, adminGenerated: botCode.trim(), adminIssuedAt: new Date(), adminIssuedBy: user._id }
       }))
       setBotCode('')
+      setShowCodeIssueModal(false)
       setSuccess('BOT code issued. Share it with the customer.')
     } catch (err) {
       setError(err.message)
@@ -1707,28 +1721,6 @@ function AdminPanel() {
                 {['imf_required', 'bot_required', 'bot_pending', 'processing', 'approved', 'completed'].includes(selectedWithdrawal.status) && (
                   <div className="border-t pt-4">
                     <h4 className="text-md font-semibold text-gray-900 mb-3">IMF Code Verification</h4>
-                    {selectedWithdrawal.status === 'imf_required' && (
-                      <div className="space-y-3">
-                        <label className="block text-sm font-medium text-gray-700">
-                          IMF code to share with the customer
-                        </label>
-                        <input
-                          type="text"
-                          value={imfCode}
-                          onChange={(e) => setImfCode(e.target.value)}
-                          maxLength={20}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="Enter IMF code"
-                        />
-                        <button
-                          onClick={() => issueImfCode(selectedWithdrawal.id)}
-                          disabled={!imfCode.trim() || isIssuingImf}
-                          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-                        >
-                          {isIssuingImf ? 'Issuing...' : 'Issue IMF Code'}
-                        </button>
-                      </div>
-                    )}
                     {selectedWithdrawal.imfCode?.adminGenerated && (
                       <div className="mt-3">
                         <p className="text-sm font-medium text-gray-700">Issued IMF code</p>
@@ -1759,28 +1751,7 @@ function AdminPanel() {
                     {(selectedWithdrawal.status === 'bot_required' || selectedWithdrawal.status === 'bot_pending' || selectedWithdrawal.status === 'bot_rejected') && (
                       <div className="space-y-3">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">BOT code to share with the customer</label>
-                          <input
-                            type="text"
-                            value={botCode}
-                            onChange={(e) => setBotCode(e.target.value)}
-                            maxLength={20}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="Enter BOT code"
-                          />
-                        </div>
-                        <div className="flex space-x-3">
-                          <button
-                            onClick={() => issueBotCode(selectedWithdrawal.id)}
-                            disabled={!botCode.trim() || isIssuingBot}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-                          >
-                            {isIssuingBot ? 'Issuing...' : 'Issue BOT Code'}
-                          </button>
-                        </div>
-                        
-                        <div className="border-t pt-3 mt-4">
-                          <h5 className="text-sm font-medium text-gray-700 mb-2">Or Reject BOT Code</h5>
+                          <h5 className="text-sm font-medium text-gray-700 mb-2">Reject BOT Code</h5>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Rejection Reason</label>
                             <textarea
@@ -1884,6 +1855,73 @@ function AdminPanel() {
               </div>
             </div>
           </div>
+      )}
+      {showCodeIssueModal && selectedWithdrawal && codeIssueType && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="withdrawal-code-modal-title"
+            className="w-full max-w-md rounded-lg bg-white shadow-xl"
+          >
+            <div className="border-b border-gray-200 px-6 py-4">
+              <h3 id="withdrawal-code-modal-title" className="text-lg font-semibold text-gray-900">
+                Issue {codeIssueType === 'imf' ? 'IMF' : 'BOT'} Code
+              </h3>
+            </div>
+            <div className="space-y-4 px-6 py-4">
+              <p className="text-sm text-gray-600">
+                Enter the code to share with the customer for withdrawal {selectedWithdrawal.id}.
+              </p>
+              <div>
+                <label htmlFor="withdrawal-code-input" className="mb-1 block text-sm font-medium text-gray-700">
+                  {codeIssueType === 'imf' ? 'IMF Code' : 'BOT Code'}
+                </label>
+                <input
+                  id="withdrawal-code-input"
+                  type="text"
+                  value={codeIssueType === 'imf' ? imfCode : botCode}
+                  onChange={(event) => {
+                    if (codeIssueType === 'imf') {
+                      setImfCode(event.target.value)
+                    } else {
+                      setBotCode(event.target.value)
+                    }
+                  }}
+                  maxLength={20}
+                  autoFocus
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder={`Enter ${codeIssueType.toUpperCase()} code`}
+                />
+              </div>
+              {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+            </div>
+            <div className="flex justify-end gap-3 border-t border-gray-200 px-6 py-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCodeIssueModal(false)
+                  setImfCode('')
+                  setBotCode('')
+                  setError('')
+                }}
+                className="rounded-md bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => codeIssueType === 'imf'
+                  ? issueImfCode(selectedWithdrawal.id)
+                  : issueBotCode(selectedWithdrawal.id)}
+                disabled={(codeIssueType === 'imf' ? !imfCode.trim() : !botCode.trim()) || isIssuingImf || isIssuingBot}
+                className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
+              >
+                {isIssuingImf || isIssuingBot ? 'Issuing...' : 'Issue Code'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
       {showTicketModal && selectedTicket && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -2999,6 +3037,28 @@ function AdminPanel() {
                       {new Date(withdrawal.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                      {withdrawal.status === 'imf_required' && (
+                        <button
+                          key={`issue-imf-${withdrawal.id}`}
+                          type="button"
+                          onClick={() => openCodeIssueModal(withdrawal, 'imf')}
+                          className="rounded bg-blue-50 px-2 py-1 text-xs text-blue-700 hover:bg-blue-100"
+                          title="Issue IMF Code"
+                        >
+                          {withdrawal.imfCode?.adminGenerated ? 'Reissue IMF Code' : 'Issue IMF Code'}
+                        </button>
+                      )}
+                      {['bot_required', 'bot_pending', 'bot_rejected'].includes(withdrawal.status) && (
+                        <button
+                          key={`issue-bot-${withdrawal.id}`}
+                          type="button"
+                          onClick={() => openCodeIssueModal(withdrawal, 'bot')}
+                          className="rounded bg-blue-50 px-2 py-1 text-xs text-blue-700 hover:bg-blue-100"
+                          title="Issue BOT Code"
+                        >
+                          {withdrawal.botCode?.adminGenerated ? 'Reissue BOT Code' : 'Issue BOT Code'}
+                        </button>
+                      )}
                       {ACTIONABLE_WITHDRAWAL_STATUSES.includes(withdrawal.status) && (
                         <>
                           <button
