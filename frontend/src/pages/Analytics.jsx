@@ -3,7 +3,6 @@ import { motion } from 'framer-motion'
 import { TrendingUp, TrendingDown, BarChart3, PieChart, Activity, Target, Award, Calendar } from 'lucide-react'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import LiveGames from '../components/LiveGames'
 
 const Analytics = () => {
   const [activeTab, setActiveTab] = useState('overview')
@@ -94,8 +93,6 @@ const Analytics = () => {
           </motion.div>
         </div>
       </section>
-
-      <LiveGames />
 
       {/* Stats Overview */}
       <section className="py-16 bg-navy-900/50">
