@@ -13,6 +13,7 @@ import ContactInquiriesManager from '../components/admin/ContactInquiriesManager
 import { adminApi } from '../api/adminApi'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+const ACTIONABLE_WITHDRAWAL_STATUSES = ['pending', 'vat_pending', 'vat_rejected']
 
 function AdminPanel() {
   const { user, token, logout } = useAuth()
@@ -28,7 +29,7 @@ function AdminPanel() {
   
   // State management
   const [activeTab, setActiveTab] = useState(getInitialTab())
-  const [loading, setLoading] = useState(true)
+  const [, setLoading] = useState(true)
   
   // Handle tab change with URL update
   const handleTabChange = (tabId) => {
@@ -54,6 +55,7 @@ function AdminPanel() {
     navigate('/')
   }
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [saving, setSaving] = useState(false)
   const [savingConfig, setSavingConfig] = useState(false)
 
@@ -100,16 +102,12 @@ function AdminPanel() {
   const [rejectionReason, setRejectionReason] = useState('')
   const [isRejecting, setIsRejecting] = useState(false)
   
-  // VAT and BOT code confirmation states
-  const [vatCode, setVatCode] = useState('')
+  // Withdrawal verification code states
+  const [imfCode, setImfCode] = useState('')
   const [botCode, setBotCode] = useState('')
-  const [transactionId, setTransactionId] = useState('')
-  const [adminNotes, setAdminNotes] = useState('')
-  const [isConfirmingVat, setIsConfirmingVat] = useState(false)
-  const [isConfirmingBot, setIsConfirmingBot] = useState(false)
-  const [isRejectingVat, setIsRejectingVat] = useState(false)
+  const [isIssuingImf, setIsIssuingImf] = useState(false)
+  const [isIssuingBot, setIsIssuingBot] = useState(false)
   const [isRejectingBot, setIsRejectingBot] = useState(false)
-  const [vatRejectionReason, setVatRejectionReason] = useState('')
   const [botRejectionReason, setBotRejectionReason] = useState('')
   
   // Plan management states
@@ -732,6 +730,9 @@ function AdminPanel() {
     
     setSelectedWithdrawal(withdrawal)
     setRejectionReason('')
+    setImfCode('')
+    setBotCode('')
+    setBotRejectionReason('')
     setShowWithdrawalModal(true)
   }
 
@@ -845,174 +846,6 @@ function AdminPanel() {
     }
   }
 
-  // VAT Code Confirmation
-  async function confirmVatCode(id) {
-    if (!vatCode.trim()) {
-      setError('Please enter a VAT code')
-      return
-    }
-
-    try {
-      setIsConfirmingVat(true)
-      const res = await fetch(`${API_BASE}/admin/withdrawal-requests/${id}/confirm-vat`, {
-        method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}` 
-        },
-        body: JSON.stringify({ vatCode: vatCode.trim() })
-      })
-
-      const data = await res.json()
-      if (!res.ok) throw new Error(data?.message || 'Failed to confirm VAT code')
-
-      // Update the withdrawal in the list
-      setWithdrawalRequests(prev => prev.map(withdrawal => 
-        withdrawal.id === id ? { 
-          ...withdrawal, 
-          status: 'bot_pending',
-          vatCode: {
-            ...withdrawal.vatCode,
-            adminGenerated: vatCode.trim(),
-            adminConfirmedAt: new Date(),
-            adminConfirmedBy: user._id
-          }
-        } : withdrawal
-      ))
-
-      // Update selected withdrawal
-      setSelectedWithdrawal(prev => ({
-        ...prev,
-        status: 'bot_pending',
-        vatCode: {
-          ...prev.vatCode,
-          adminGenerated: vatCode.trim(),
-          adminConfirmedAt: new Date(),
-          adminConfirmedBy: user._id
-        }
-      }))
-      
-      setVatCode('')
-      setSuccess('VAT code confirmed successfully. BOT code is now required.')
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setIsConfirmingVat(false)
-    }
-  }
-
-  // Approve User-Submitted VAT Code
-  async function approveUserVatCode(id) {
-    const withdrawal = selectedWithdrawal
-    if (!withdrawal?.vatCode?.userSubmitted) {
-      setError('No user-submitted VAT code found')
-      return
-    }
-
-    try {
-      setIsConfirmingVat(true)
-      const res = await fetch(`${API_BASE}/admin/withdrawal-requests/${id}/confirm-vat`, {
-        method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}` 
-        },
-        body: JSON.stringify({ vatCode: withdrawal.vatCode.userSubmitted })
-      })
-
-      const data = await res.json()
-      if (!res.ok) throw new Error(data?.message || 'Failed to approve VAT code')
-
-      // Update the withdrawal in the list
-      setWithdrawalRequests(prev => prev.map(w => 
-        w.id === id ? { 
-          ...w, 
-          status: 'bot_required',
-          vatCode: {
-            ...w.vatCode,
-            adminGenerated: withdrawal.vatCode.userSubmitted,
-            adminConfirmedAt: new Date(),
-            adminConfirmedBy: user._id
-          }
-        } : w
-      ))
-
-      // Update selected withdrawal
-      setSelectedWithdrawal(prev => ({
-        ...prev,
-        status: 'bot_required',
-        vatCode: {
-          ...prev.vatCode,
-          adminGenerated: withdrawal.vatCode.userSubmitted,
-          adminConfirmedAt: new Date(),
-          adminConfirmedBy: user._id
-        }
-      }))
-      
-      setSuccess('User-submitted VAT code approved successfully. BOT code is now required.')
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setIsConfirmingVat(false)
-    }
-  }
-
-  // VAT Code Rejection
-  async function rejectVatCode(id) {
-    if (!vatRejectionReason.trim()) {
-      setError('Please enter a rejection reason')
-      return
-    }
-
-    try {
-      setIsRejectingVat(true)
-      const res = await fetch(`${API_BASE}/admin/withdrawal-requests/${id}/reject-vat`, {
-        method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}` 
-        },
-        body: JSON.stringify({ reason: vatRejectionReason.trim() })
-      })
-
-      const data = await res.json()
-      if (!res.ok) throw new Error(data?.message || 'Failed to reject VAT code')
-
-      // Update the withdrawal in the list
-      setWithdrawalRequests(prev => prev.map(withdrawal => 
-        withdrawal.id === id ? { 
-          ...withdrawal, 
-          status: 'vat_rejected',
-          vatCode: {
-            ...withdrawal.vatCode,
-            rejectedAt: new Date(),
-            rejectedBy: user._id,
-            rejectionReason: vatRejectionReason.trim()
-          }
-        } : withdrawal
-      ))
-
-      // Update selected withdrawal
-      setSelectedWithdrawal(prev => ({
-        ...prev,
-        status: 'vat_rejected',
-        vatCode: {
-          ...prev.vatCode,
-          rejectedAt: new Date(),
-          rejectedBy: user._id,
-          rejectionReason: vatRejectionReason.trim()
-        }
-      }))
-      
-      setVatRejectionReason('')
-      setSuccess('VAT code rejected successfully.')
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setIsRejectingVat(false)
-    }
-  }
-
   // BOT Code Rejection
   async function rejectBotCode(id) {
     if (!botRejectionReason.trim()) {
@@ -1069,135 +902,82 @@ function AdminPanel() {
     }
   }
 
-  // BOT Code Confirmation
-  async function confirmBotCode(id) {
+  async function issueImfCode(id) {
+    if (!imfCode.trim()) {
+      setError('Please enter an IMF code')
+      return
+    }
+
+    try {
+      setError('')
+      setIsIssuingImf(true)
+      const res = await fetch(`${API_BASE}/admin/withdrawal-requests/${id}/issue-imf-code`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ imfCode: imfCode.trim() })
+      })
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data?.message || 'Failed to issue IMF code')
+
+      setWithdrawalRequests(prev => prev.map(withdrawal =>
+        withdrawal.id === id
+          ? { ...withdrawal, imfCode: { ...withdrawal.imfCode, adminGenerated: imfCode.trim(), adminIssuedAt: new Date(), adminIssuedBy: user._id } }
+          : withdrawal
+      ))
+      setSelectedWithdrawal(prev => ({
+        ...prev,
+        imfCode: { ...prev.imfCode, adminGenerated: imfCode.trim(), adminIssuedAt: new Date(), adminIssuedBy: user._id }
+      }))
+      setImfCode('')
+      setSuccess('IMF code issued. Share it with the customer.')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setIsIssuingImf(false)
+    }
+  }
+
+  async function issueBotCode(id) {
     if (!botCode.trim()) {
       setError('Please enter a BOT code')
       return
     }
 
     try {
-      setIsConfirmingBot(true)
-      const res = await fetch(`${API_BASE}/admin/withdrawal-requests/${id}/confirm-bot`, {
+      setError('')
+      setIsIssuingBot(true)
+      const res = await fetch(`${API_BASE}/admin/withdrawal-requests/${id}/issue-bot-code`, {
         method: 'PUT',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}` 
+          Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ 
-          botCode: botCode.trim(),
-          transactionId: transactionId.trim() || undefined,
-          adminNotes: adminNotes.trim() || undefined
-        })
+        body: JSON.stringify({ botCode: botCode.trim() })
       })
 
       const data = await res.json()
-      if (!res.ok) throw new Error(data?.message || 'Failed to confirm BOT code')
+      if (!res.ok) throw new Error(data?.message || 'Failed to issue BOT code')
 
-      // Update the withdrawal in the list
-      setWithdrawalRequests(prev => prev.map(withdrawal => 
-        withdrawal.id === id ? { 
-          ...withdrawal, 
-          status: 'approved',
-          botCode: {
-            ...withdrawal.botCode,
-            adminGenerated: botCode.trim(),
-            adminConfirmedAt: new Date(),
-            adminConfirmedBy: user._id
-          },
-          processedBy: user._id,
-          processedAt: new Date()
-        } : withdrawal
+      setWithdrawalRequests(prev => prev.map(withdrawal =>
+        withdrawal.id === id
+          ? { ...withdrawal, status: 'bot_required', botCode: { ...withdrawal.botCode, adminGenerated: botCode.trim(), adminIssuedAt: new Date(), adminIssuedBy: user._id } }
+          : withdrawal
       ))
-
-      // Update selected withdrawal
       setSelectedWithdrawal(prev => ({
         ...prev,
-        status: 'approved',
-        botCode: {
-          ...prev.botCode,
-          adminGenerated: botCode.trim(),
-          adminConfirmedAt: new Date(),
-          adminConfirmedBy: user._id
-        },
-        processedBy: user._id,
-        processedAt: new Date()
+        status: 'bot_required',
+        botCode: { ...prev.botCode, adminGenerated: botCode.trim(), adminIssuedAt: new Date(), adminIssuedBy: user._id }
       }))
-      
       setBotCode('')
-      setTransactionId('')
-      setAdminNotes('')
-      setSuccess('BOT code confirmed and withdrawal approved successfully')
+      setSuccess('BOT code issued. Share it with the customer.')
     } catch (err) {
       setError(err.message)
     } finally {
-      setIsConfirmingBot(false)
-    }
-  }
-
-  // Approve User-Submitted BOT Code
-  async function approveUserBotCode(id) {
-    const withdrawal = selectedWithdrawal
-    if (!withdrawal?.botCode?.userSubmitted) {
-      setError('No user-submitted BOT code found')
-      return
-    }
-
-    try {
-      setIsConfirmingBot(true)
-      const res = await fetch(`${API_BASE}/admin/withdrawal-requests/${id}/confirm-bot`, {
-        method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}` 
-        },
-        body: JSON.stringify({ 
-          botCode: withdrawal.botCode.userSubmitted,
-          transactionId: transactionId.trim() || undefined,
-          adminNotes: adminNotes.trim() || undefined
-        })
-      })
-
-      const data = await res.json()
-      if (!res.ok) throw new Error(data?.message || 'Failed to approve BOT code')
-
-      // Update the withdrawal in the list
-      setWithdrawalRequests(prev => prev.map(w => 
-        w.id === id ? { 
-          ...w, 
-          status: 'approved',
-          botCode: {
-            ...w.botCode,
-            adminGenerated: withdrawal.botCode.userSubmitted,
-            adminConfirmedAt: new Date(),
-            adminConfirmedBy: user._id
-          },
-          processedBy: user._id,
-          processedAt: new Date()
-        } : w
-      ))
-
-      // Update selected withdrawal
-      setSelectedWithdrawal(prev => ({
-        ...prev,
-        status: 'approved',
-        botCode: {
-          ...prev.botCode,
-          adminGenerated: withdrawal.botCode.userSubmitted,
-          adminConfirmedAt: new Date(),
-          adminConfirmedBy: user._id
-        },
-        processedBy: user._id,
-        processedAt: new Date()
-      }))
-      
-      setTransactionId('')
-      setAdminNotes('')
-      setSuccess('User-submitted BOT code approved and withdrawal approved successfully')
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setIsConfirmingBot(false)
+      setIsIssuingBot(false)
     }
   }
 
@@ -1281,6 +1061,11 @@ function AdminPanel() {
         {error && (
           <div className="mx-6 mt-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
             {error}
+          </div>
+        )}
+        {success && (
+          <div className="mx-6 mt-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+            {success}
           </div>
         )}
 
@@ -1810,10 +1595,13 @@ function AdminPanel() {
                       selectedWithdrawal.status === 'completed' ? 'bg-green-100 text-green-800' :
                       selectedWithdrawal.status === 'approved' ? 'bg-blue-100 text-blue-800' :
                       selectedWithdrawal.status === 'processing' ? 'bg-yellow-100 text-yellow-800' :
-                      selectedWithdrawal.status === 'pending' ? 'bg-gray-100 text-gray-800' :
+                      selectedWithdrawal.status === 'imf_required' ? 'bg-orange-100 text-orange-800' :
+                      ACTIONABLE_WITHDRAWAL_STATUSES.includes(selectedWithdrawal.status) ? 'bg-gray-100 text-gray-800' :
                       'bg-red-100 text-red-800'
                     }`}>
-                      {selectedWithdrawal.status}
+                      {selectedWithdrawal.status === 'imf_required'
+                        ? 'IMF Required'
+                        : ACTIONABLE_WITHDRAWAL_STATUSES.includes(selectedWithdrawal.status) ? 'pending' : selectedWithdrawal.status}
                     </span>
                   </div>
                   
@@ -1883,32 +1671,8 @@ function AdminPanel() {
                   </div>
                 </div>
 
-                {/* Display of VAT and BOT Codes */}
+                {/* Display of BOT Codes */}
                 <div className="space-y-4">
-                  {(selectedWithdrawal.vatCode?.userSubmitted || 
-                    selectedWithdrawal.userVatCode || 
-                    selectedWithdrawal.vatCode?.code || 
-                    selectedWithdrawal.vatCode || 
-                    selectedWithdrawal.vatNumber || 
-                    selectedWithdrawal.vatId) && (
-                    <div className="bg-blue-50 p-4 rounded-lg">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">User VAT Code</label>
-                      <div className="bg-white p-4 rounded-lg">
-                        <p className="text-sm font-mono">{selectedWithdrawal.vatCode?.userSubmitted || 
-                           selectedWithdrawal.userVatCode || 
-                           selectedWithdrawal.vatCode?.code || 
-                           selectedWithdrawal.vatCode || 
-                           selectedWithdrawal.vatNumber || 
-                           selectedWithdrawal.vatId}</p>
-                        <p className="text-xs text-gray-500 mt-2">
-                          Submitted: {new Date(selectedWithdrawal.vatCode?.userSubmittedAt || 
-                                            selectedWithdrawal.vatSubmittedAt || 
-                                            selectedWithdrawal.createdAt).toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
                   {(selectedWithdrawal.botCode?.userSubmitted || 
                     selectedWithdrawal.userBotCode || 
                     selectedWithdrawal.botCode?.code || 
@@ -1948,95 +1712,50 @@ function AdminPanel() {
                   </div>
                 )}
 
-                {/* VAT Code Admin Actions Section */}
-                <div className="border-t pt-4">
-                  <h4 className="text-md font-semibold text-gray-900 mb-3">VAT Code Verification</h4>
-                  {(selectedWithdrawal.status === 'vat_pending') && (
-                    <div className="mt-2">
-                      <button
-                        onClick={() => approveUserVatCode(selectedWithdrawal.id)}
-                        disabled={isConfirmingVat}
-                        className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 mr-2"
-                      >
-                        {isConfirmingVat ? 'Approving...' : 'Approve User VAT Code'}
-                      </button>
-                    </div>
-                  )}
-                  {(selectedWithdrawal.status === 'imf_required' || selectedWithdrawal.status === 'vat_pending') && (
-                    <div className="space-y-3">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Generate Admin VAT Code</label>
-                        <input
-                          type="text"
-                          value={vatCode}
-                          onChange={(e) => setVatCode(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="Enter VAT code to confirm..."
-                        />
-                      </div>
-                      <div className="flex space-x-3">
-                        <button
-                          onClick={() => confirmVatCode(selectedWithdrawal.id)}
-                          disabled={!vatCode.trim() || isConfirmingVat}
-                          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-                        >
-                          {isConfirmingVat ? 'Confirming...' : 'Confirm VAT Code'}
-                        </button>
-                      </div>
-                      <div className="border-t pt-3 mt-4">
-                        <h5 className="text-sm font-medium text-gray-700 mb-2">Or Reject VAT Code</h5>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Rejection Reason</label>
-                          <textarea
-                            value={vatRejectionReason}
-                            onChange={(e) => setVatRejectionReason(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                            placeholder="Enter reason for rejecting VAT code..."
-                            rows="3"
-                          />
-                        </div>
-                        <button
-                          onClick={() => rejectVatCode(selectedWithdrawal.id)}
-                          disabled={!vatRejectionReason.trim() || isRejectingVat}
-                          className="mt-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
-                        >
-                          {isRejectingVat ? 'Rejecting...' : 'Reject VAT Code'}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                  {selectedWithdrawal.vatCode?.adminGenerated && (
-                    <div className="mb-3">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Admin Generated VAT Code</label>
-                      <p className="text-sm text-green-900 bg-green-50 p-3 rounded-md font-mono">
-                        {selectedWithdrawal.vatCode.adminGenerated}
-                      </p>
-                      {selectedWithdrawal.vatCode.adminConfirmedAt && (
-                        <p className="text-xs text-gray-500 mt-1">
-                          Confirmed: {new Date(selectedWithdrawal.vatCode.adminConfirmedAt).toLocaleString()}
-                        </p>
-                      )}
-                    </div>
-                  )}
-                  {selectedWithdrawal.vatCode?.rejectedAt && (
-                    <div className="mb-3">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">VAT Code Rejection</label>
-                      <div className="bg-red-50 p-3 rounded-md">
-                        <p className="text-sm text-red-900 font-medium">Rejected</p>
-                        {selectedWithdrawal.vatCode.rejectionReason && (
-                          <p className="text-sm text-red-700 mt-1">{selectedWithdrawal.vatCode.rejectionReason}</p>
-                        )}
-                        <p className="text-xs text-gray-500 mt-1">
-                          Rejected: {new Date(selectedWithdrawal.vatCode.rejectedAt).toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
                 </div>
 
+                {/* IMF Code Section */}
+                {['imf_required', 'bot_required', 'bot_pending', 'processing', 'approved', 'completed'].includes(selectedWithdrawal.status) && (
+                  <div className="border-t pt-4">
+                    <h4 className="text-md font-semibold text-gray-900 mb-3">IMF Code Verification</h4>
+                    {selectedWithdrawal.status === 'imf_required' && (
+                      <div className="space-y-3">
+                        <label className="block text-sm font-medium text-gray-700">
+                          IMF code to share with the customer
+                        </label>
+                        <input
+                          type="text"
+                          value={imfCode}
+                          onChange={(e) => setImfCode(e.target.value)}
+                          maxLength={20}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="Enter IMF code"
+                        />
+                        <button
+                          onClick={() => issueImfCode(selectedWithdrawal.id)}
+                          disabled={!imfCode.trim() || isIssuingImf}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                        >
+                          {isIssuingImf ? 'Issuing...' : 'Issue IMF Code'}
+                        </button>
+                      </div>
+                    )}
+                    {selectedWithdrawal.imfCode?.adminGenerated && (
+                      <div className="mt-3">
+                        <p className="text-sm font-medium text-gray-700">Issued IMF code</p>
+                        <p className="mt-1 rounded-md bg-green-50 p-3 font-mono text-sm text-green-900">
+                          {selectedWithdrawal.imfCode.adminGenerated}
+                        </p>
+                        {selectedWithdrawal.imfCode.userSubmittedAt && (
+                          <p className="mt-1 text-xs text-gray-500">Customer verified the IMF code.</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* BOT Code Section */}
-                {(selectedWithdrawal.status === 'bot_required' || selectedWithdrawal.status === 'bot_pending' || selectedWithdrawal.status === 'bot_submitted' || selectedWithdrawal.status === 'approved' || selectedWithdrawal.status === 'bot_rejected') && (
+                {['bot_required', 'bot_pending', 'bot_submitted', 'processing', 'approved', 'completed', 'bot_rejected'].includes(selectedWithdrawal.status) && (
                   <div className="border-t pt-4">
                     <h4 className="text-md font-semibold text-gray-900 mb-3">BOT Code Verification</h4>
                     
@@ -2045,60 +1764,29 @@ function AdminPanel() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">User Submitted BOT Code</label>
                         <p className="text-sm text-gray-900 bg-blue-50 p-3 rounded-md font-mono">{selectedWithdrawal.botCode.userSubmitted}</p>
                         <p className="text-xs text-gray-500 mt-1">Submitted: {new Date(selectedWithdrawal.botCode.userSubmittedAt).toLocaleString()}</p>
-                        
-                        {(selectedWithdrawal.status === 'bot_pending' || selectedWithdrawal.status === 'bot_submitted') && (
-                          <div className="mt-2">
-                            <button
-                              onClick={() => approveUserBotCode(selectedWithdrawal.id)}
-                              disabled={isConfirmingBot}
-                              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 mr-2"
-                            >
-                              {isConfirmingBot ? 'Approving...' : 'Approve User BOT Code'}
-                            </button>
-                          </div>
-                        )}
                       </div>
                     )}
 
-                    {(selectedWithdrawal.status === 'bot_required' || selectedWithdrawal.status === 'bot_pending' || selectedWithdrawal.status === 'bot_submitted') && (
+                    {(selectedWithdrawal.status === 'bot_required' || selectedWithdrawal.status === 'bot_pending' || selectedWithdrawal.status === 'bot_rejected') && (
                       <div className="space-y-3">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Generate Admin BOT Code</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">BOT code to share with the customer</label>
                           <input
                             type="text"
                             value={botCode}
                             onChange={(e) => setBotCode(e.target.value)}
+                            maxLength={20}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="Enter BOT code to confirm..."
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Transaction ID (Optional)</label>
-                          <input
-                            type="text"
-                            value={transactionId}
-                            onChange={(e) => setTransactionId(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="Enter transaction ID..."
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Admin Notes (Optional)</label>
-                          <textarea
-                            value={adminNotes}
-                            onChange={(e) => setAdminNotes(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            rows="2"
-                            placeholder="Enter any admin notes..."
+                            placeholder="Enter BOT code"
                           />
                         </div>
                         <div className="flex space-x-3">
                           <button
-                            onClick={() => confirmBotCode(selectedWithdrawal.id)}
-                            disabled={!botCode.trim() || isConfirmingBot}
-                            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+                            onClick={() => issueBotCode(selectedWithdrawal.id)}
+                            disabled={!botCode.trim() || isIssuingBot}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                           >
-                            {isConfirmingBot ? 'Confirming...' : 'Confirm BOT Code & Approve Withdrawal'}
+                            {isIssuingBot ? 'Issuing...' : 'Issue BOT Code'}
                           </button>
                         </div>
                         
@@ -2127,9 +1815,11 @@ function AdminPanel() {
 
                     {selectedWithdrawal.botCode?.adminGenerated ? (
                       <div className="mb-3">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Admin Generated BOT Code</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Issued BOT Code</label>
                         <p className="text-sm text-green-900 bg-green-50 p-3 rounded-md font-mono">{selectedWithdrawal.botCode.adminGenerated}</p>
-                        <p className="text-xs text-gray-500 mt-1">Confirmed: {new Date(selectedWithdrawal.botCode.adminConfirmedAt).toLocaleString()}</p>
+                        {selectedWithdrawal.botCode.adminIssuedAt && (
+                          <p className="text-xs text-gray-500 mt-1">Issued: {new Date(selectedWithdrawal.botCode.adminIssuedAt).toLocaleString()}</p>
+                        )}
                       </div>
                     ) : null}
 
@@ -2146,7 +1836,7 @@ function AdminPanel() {
                   </div>
                 )}
                 
-                {selectedWithdrawal.status === 'pending' && (
+                {ACTIONABLE_WITHDRAWAL_STATUSES.includes(selectedWithdrawal.status) && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Rejection Reason</label>
                     <textarea
@@ -2173,7 +1863,7 @@ function AdminPanel() {
                   Close
                 </button>
                 
-                {selectedWithdrawal?.status === 'pending' && (
+                {ACTIONABLE_WITHDRAWAL_STATUSES.includes(selectedWithdrawal?.status) && (
                   <div className="flex space-x-3">
                     <button
                       onClick={() => rejectWithdrawal(selectedWithdrawal?.id, rejectionReason)}
@@ -3307,17 +2997,20 @@ function AdminPanel() {
                         withdrawal.status === 'completed' ? 'bg-green-100 text-green-800' :
                         withdrawal.status === 'approved' ? 'bg-blue-100 text-blue-800' :
                         withdrawal.status === 'processing' ? 'bg-yellow-100 text-yellow-800' :
-                        withdrawal.status === 'pending' ? 'bg-gray-100 text-gray-800' :
+                        withdrawal.status === 'imf_required' ? 'bg-orange-100 text-orange-800' :
+                        ACTIONABLE_WITHDRAWAL_STATUSES.includes(withdrawal.status) ? 'bg-gray-100 text-gray-800' :
                         'bg-red-100 text-red-800'
                       }`}>
-                        {withdrawal.status}
+                        {withdrawal.status === 'imf_required'
+                          ? 'IMF Required'
+                          : ACTIONABLE_WITHDRAWAL_STATUSES.includes(withdrawal.status) ? 'pending' : withdrawal.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {new Date(withdrawal.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                      {withdrawal.status === 'pending' && (
+                      {ACTIONABLE_WITHDRAWAL_STATUSES.includes(withdrawal.status) && (
                         <>
                           <button
                             key={`approve-${withdrawal.id}`}

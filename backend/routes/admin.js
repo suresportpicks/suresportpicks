@@ -838,6 +838,8 @@ router.get('/withdrawal-requests', async (req, res) => {
         processedAt: request.processedAt,
         rejectionReason: request.rejectionReason,
         adminNotes: request.adminNotes,
+        imfCode: request.imfCode,
+        botCode: request.botCode,
         transactionId: request.transactionId,
         formattedAmount: `${request.currency} $${request.amount.toFixed(2)}`,
         timeAgo: getTimeAgo(request.createdAt)
@@ -931,7 +933,7 @@ router.put('/withdrawal-requests/:id/approve', async (req, res) => {
       return res.status(404).json({ message: 'Withdrawal request not found' });
     }
 
-    if (withdrawalRequest.status !== 'pending') {
+    if (!['pending', 'vat_pending', 'vat_rejected'].includes(withdrawalRequest.status)) {
       return res.status(400).json({ message: 'Only pending withdrawal requests can be approved' });
     }
 
@@ -946,21 +948,6 @@ router.put('/withdrawal-requests/:id/approve', async (req, res) => {
 
     // Approve the withdrawal request
     await withdrawalRequest.approve(req.user._id, transactionId, adminNotes);
-
-    // Deduct amount from user's balance
-    withdrawalRequest.user.balance -= withdrawalRequest.amount;
-    await withdrawalRequest.user.save();
-
-    // Create transaction record
-    await Transaction.create({
-      userId: withdrawalRequest.user._id,
-      type: 'withdraw',
-      amount: withdrawalRequest.amount,
-      status: 'completed',
-      description: `Withdrawal approved - ${withdrawalRequest.paymentMethod}`,
-      transactionId: transactionId || `WD-${Date.now()}`,
-      adminNotes
-    });
 
     res.json({
       message: 'Withdrawal request approved successfully',
@@ -990,7 +977,7 @@ router.put('/withdrawal-requests/:id/reject', async (req, res) => {
       return res.status(404).json({ message: 'Withdrawal request not found' });
     }
 
-    if (withdrawalRequest.status !== 'pending') {
+    if (!['pending', 'vat_pending', 'vat_rejected'].includes(withdrawalRequest.status)) {
       return res.status(400).json({ message: 'Only pending withdrawal requests can be rejected' });
     }
 
@@ -1020,7 +1007,7 @@ router.put('/withdrawal-requests/:id/process', async (req, res) => {
       return res.status(404).json({ message: 'Withdrawal request not found' });
     }
 
-    if (withdrawalRequest.status !== 'pending') {
+    if (!['pending', 'vat_pending', 'vat_rejected'].includes(withdrawalRequest.status)) {
       return res.status(400).json({ message: 'Only pending withdrawal requests can be marked as processing' });
     }
 
@@ -1050,33 +1037,90 @@ router.put('/withdrawal-requests/:id/complete', async (req, res) => {
       return res.status(404).json({ message: 'Withdrawal request not found' });
     }
 
+    if (!withdrawalRequest.user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
     if (!['approved', 'processing'].includes(withdrawalRequest.status)) {
       return res.status(400).json({ message: 'Only approved or processing withdrawal requests can be completed' });
     }
 
-    // Mark as completed
-    await withdrawalRequest.markAsCompleted(req.user._id, transactionId, adminNotes);
+    const requestStatus = withdrawalRequest.status;
+    const previousProcessedBy = withdrawalRequest.processedBy;
+    const previousProcessedAt = withdrawalRequest.processedAt;
+    const previousTransactionId = withdrawalRequest.transactionId;
+    const previousAdminNotes = withdrawalRequest.adminNotes;
+    const completedTransactionId = transactionId || `WD-${Date.now()}`;
+    const user = await User.findOneAndUpdate(
+      { _id: withdrawalRequest.user._id, balance: { $gte: withdrawalRequest.amount } },
+      { $inc: { balance: -withdrawalRequest.amount } },
+      { new: true }
+    );
 
-    // Update transaction record if exists
-    const transaction = await Transaction.findOne({
-      userId: withdrawalRequest.user._id,
-      type: 'withdraw',
-      amount: withdrawalRequest.amount,
-      description: { $regex: `Withdrawal approved.*${withdrawalRequest.paymentMethod}` }
-    });
-
-    if (transaction) {
-      transaction.status = 'completed';
-      transaction.transactionId = transactionId || transaction.transactionId;
-      if (adminNotes) transaction.adminNotes = adminNotes;
-      await transaction.save();
+    if (!user) {
+      return res.status(400).json({
+        message: 'User has insufficient balance to complete this withdrawal',
+        userBalance: withdrawalRequest.user.balance,
+        requestedAmount: withdrawalRequest.amount
+      });
     }
+
+    let completedRequest;
+    try {
+      completedRequest = await WithdrawalRequest.findOneAndUpdate(
+        { _id: req.params.id, status: requestStatus },
+        {
+          $set: {
+            status: 'completed',
+            processedBy: req.user._id,
+            processedAt: new Date(),
+            transactionId: completedTransactionId,
+            ...(adminNotes ? { adminNotes } : {})
+          }
+        },
+        { new: true }
+      );
+
+      if (!completedRequest) {
+        await User.updateOne({ _id: user._id }, { $inc: { balance: withdrawalRequest.amount } });
+        return res.status(409).json({ message: 'Withdrawal status changed before it could be completed' });
+      }
+
+      await Transaction.create({
+        userId: user._id,
+        type: 'withdraw',
+        amount: withdrawalRequest.amount,
+        status: 'completed',
+        description: `Withdrawal completed - ${withdrawalRequest.paymentMethod}`,
+        transactionId: completedTransactionId,
+        adminNotes
+      });
+    } catch (error) {
+      if (completedRequest) {
+        await WithdrawalRequest.updateOne(
+          { _id: completedRequest._id, status: 'completed', transactionId: completedTransactionId },
+          {
+            $set: {
+              status: requestStatus,
+              processedBy: previousProcessedBy,
+              processedAt: previousProcessedAt,
+              transactionId: previousTransactionId,
+              adminNotes: previousAdminNotes
+            }
+          }
+        );
+      }
+      await User.updateOne({ _id: user._id }, { $inc: { balance: withdrawalRequest.amount } });
+      throw error;
+    }
+
+    const completedWithdrawal = await WithdrawalRequest.findById(req.params.id)
+      .populate('user', 'username email balance')
+      .populate('processedBy', 'username email');
 
     res.json({
       message: 'Withdrawal request completed successfully',
-      withdrawalRequest: await WithdrawalRequest.findById(req.params.id)
-        .populate('user', 'username email balance')
-        .populate('processedBy', 'username email')
+      withdrawalRequest: completedWithdrawal
     });
   } catch (error) {
     console.error('Error completing withdrawal request:', error);
@@ -1242,151 +1286,69 @@ router.patch('/plans/:id/toggle-status', async (req, res) => {
   }
 });
 
-// PUT /api/admin/withdrawal-requests/:id/confirm-vat - Confirm VAT code and generate BOT requirement
-router.put('/withdrawal-requests/:id/confirm-vat', async (req, res) => {
+// PUT /api/admin/withdrawal-requests/:id/issue-imf-code - Issue IMF code
+router.put('/withdrawal-requests/:id/issue-imf-code', async (req, res) => {
   try {
-    const { vatCode } = req.body;
-    
-    if (!vatCode || !vatCode.trim()) {
-      return res.status(400).json({ message: 'VAT code is required' });
+    const { imfCode } = req.body;
+    if (typeof imfCode !== 'string' || !imfCode.trim() || imfCode.trim().length > 20) {
+      return res.status(400).json({ message: 'IMF code must be between 1 and 20 characters' });
     }
 
     const withdrawalRequest = await WithdrawalRequest.findById(req.params.id)
-      .populate('user', 'username email balance');
-
+      .populate('user', 'username email');
     if (!withdrawalRequest) {
       return res.status(404).json({ message: 'Withdrawal request not found' });
     }
 
-    if (withdrawalRequest.status !== 'imf_required' && withdrawalRequest.status !== 'vat_pending') {
-      return res.status(400).json({ message: 'VAT code can only be confirmed for withdrawals requiring IMF verification or pending VAT confirmation' });
+    if (withdrawalRequest.status !== 'imf_required') {
+      return res.status(400).json({ message: 'IMF codes can only be issued while IMF verification is required' });
     }
 
-    // Generate admin VAT code and confirm
-    withdrawalRequest.vatCode.adminGenerated = vatCode.trim();
-    withdrawalRequest.vatCode.adminConfirmedAt = new Date();
-    withdrawalRequest.vatCode.adminConfirmedBy = req.user._id;
+    withdrawalRequest.set('imfCode.adminGenerated', imfCode.trim());
+    withdrawalRequest.set('imfCode.adminIssuedAt', new Date());
+    withdrawalRequest.set('imfCode.adminIssuedBy', req.user._id);
+    await withdrawalRequest.save();
+
+    res.json({ message: 'IMF code issued successfully', withdrawalRequest });
+  } catch (error) {
+    console.error('Error issuing IMF code:', error);
+    res.status(500).json({ message: 'Failed to issue IMF code' });
+  }
+});
+
+// PUT /api/admin/withdrawal-requests/:id/issue-bot-code - Issue BOT code
+router.put('/withdrawal-requests/:id/issue-bot-code', async (req, res) => {
+  try {
+    const { botCode } = req.body;
+    if (typeof botCode !== 'string' || !botCode.trim() || botCode.trim().length > 20) {
+      return res.status(400).json({ message: 'BOT code must be between 1 and 20 characters' });
+    }
+
+    const withdrawalRequest = await WithdrawalRequest.findById(req.params.id)
+      .populate('user', 'username email');
+    if (!withdrawalRequest) {
+      return res.status(404).json({ message: 'Withdrawal request not found' });
+    }
+
+    if (!['bot_required', 'bot_pending', 'bot_rejected'].includes(withdrawalRequest.status)) {
+      return res.status(400).json({ message: 'BOT codes can only be issued while BOT verification is required' });
+    }
+
+    withdrawalRequest.set('botCode.adminGenerated', botCode.trim());
+    withdrawalRequest.set('botCode.adminIssuedAt', new Date());
+    withdrawalRequest.set('botCode.adminIssuedBy', req.user._id);
+    withdrawalRequest.set('botCode.userSubmitted', undefined);
+    withdrawalRequest.set('botCode.userSubmittedAt', undefined);
+    withdrawalRequest.set('botCode.rejectedAt', undefined);
+    withdrawalRequest.set('botCode.rejectedBy', undefined);
+    withdrawalRequest.set('botCode.rejectionReason', undefined);
     withdrawalRequest.status = 'bot_required';
-    
     await withdrawalRequest.save();
 
-    res.json({
-      message: 'VAT code confirmed successfully. BOT code is now required.',
-      withdrawalRequest: await WithdrawalRequest.findById(req.params.id)
-        .populate('user', 'username email balance')
-        .populate('processedBy', 'username email')
-        .populate('vatCode.adminConfirmedBy', 'username email')
-    });
+    res.json({ message: 'BOT code issued successfully', withdrawalRequest });
   } catch (error) {
-    console.error('Error confirming VAT code:', error);
-    res.status(500).json({ message: 'Failed to confirm VAT code' });
-  }
-});
-
-// PUT /api/admin/withdrawal-requests/:id/confirm-bot - Confirm BOT code and approve withdrawal
-router.put('/withdrawal-requests/:id/confirm-bot', async (req, res) => {
-  try {
-    const { botCode, transactionId, adminNotes } = req.body;
-    
-    if (!botCode || !botCode.trim()) {
-      return res.status(400).json({ message: 'BOT code is required' });
-    }
-
-    const withdrawalRequest = await WithdrawalRequest.findById(req.params.id)
-      .populate('user', 'username email balance');
-
-    if (!withdrawalRequest) {
-      return res.status(404).json({ message: 'Withdrawal request not found' });
-    }
-
-    if (!['bot_required', 'bot_pending', 'bot_submitted'].includes(withdrawalRequest.status)) {
-      return res.status(400).json({ message: 'BOT code can only be confirmed for withdrawals requiring BOT verification or with pending BOT codes' });
-    }
-
-    // Check if user has sufficient balance
-    if (withdrawalRequest.user.balance < withdrawalRequest.amount) {
-      return res.status(400).json({ 
-        message: 'User has insufficient balance for this withdrawal',
-        userBalance: withdrawalRequest.user.balance,
-        requestedAmount: withdrawalRequest.amount
-      });
-    }
-
-    // Generate admin BOT code and confirm
-    withdrawalRequest.botCode.adminGenerated = botCode.trim();
-    withdrawalRequest.botCode.adminConfirmedAt = new Date();
-    withdrawalRequest.botCode.adminConfirmedBy = req.user._id;
-    
-    // Approve the withdrawal request
-    await withdrawalRequest.approve(req.user._id, transactionId, adminNotes);
-
-    // Deduct amount from user's balance
-    withdrawalRequest.user.balance -= withdrawalRequest.amount;
-    await withdrawalRequest.user.save();
-
-    // Create transaction record
-    await Transaction.create({
-      userId: withdrawalRequest.user._id,
-      type: 'withdraw',
-      amount: withdrawalRequest.amount,
-      status: 'completed',
-      description: `Withdrawal approved - ${withdrawalRequest.paymentMethod}`,
-      transactionId: transactionId || `WD-${Date.now()}`,
-      adminNotes
-    });
-
-    res.json({
-      message: 'BOT code confirmed and withdrawal approved successfully',
-      withdrawalRequest: await WithdrawalRequest.findById(req.params.id)
-        .populate('user', 'username email balance')
-        .populate('processedBy', 'username email')
-        .populate('vatCode.adminConfirmedBy', 'username email')
-        .populate('botCode.adminConfirmedBy', 'username email')
-    });
-  } catch (error) {
-    console.error('Error confirming BOT code:', error);
-    res.status(500).json({ message: 'Failed to confirm BOT code' });
-  }
-});
-
-// PUT /api/admin/withdrawal-requests/:id/reject-vat - Reject VAT code
-router.put('/withdrawal-requests/:id/reject-vat', async (req, res) => {
-  try {
-    const { reason } = req.body;
-    
-    if (!reason || !reason.trim()) {
-      return res.status(400).json({ message: 'Rejection reason is required' });
-    }
-
-    const withdrawalRequest = await WithdrawalRequest.findById(req.params.id)
-      .populate('user', 'username email balance');
-
-    if (!withdrawalRequest) {
-      return res.status(404).json({ message: 'Withdrawal request not found' });
-    }
-
-    if (withdrawalRequest.status !== 'imf_required' && withdrawalRequest.status !== 'vat_pending') {
-      return res.status(400).json({ message: 'VAT code can only be rejected for withdrawals requiring IMF verification or pending VAT confirmation' });
-    }
-
-    // Reject the VAT code
-    withdrawalRequest.vatCode.rejectedAt = new Date();
-    withdrawalRequest.vatCode.rejectedBy = req.user._id;
-    withdrawalRequest.vatCode.rejectionReason = reason.trim();
-    withdrawalRequest.status = 'vat_rejected';
-    
-    await withdrawalRequest.save();
-
-    res.json({
-      message: 'VAT code rejected successfully',
-      withdrawalRequest: await WithdrawalRequest.findById(req.params.id)
-        .populate('user', 'username email balance')
-        .populate('processedBy', 'username email')
-        .populate('vatCode.rejectedBy', 'username email')
-    });
-  } catch (error) {
-    console.error('Error rejecting VAT code:', error);
-    res.status(500).json({ message: 'Failed to reject VAT code' });
+    console.error('Error issuing BOT code:', error);
+    res.status(500).json({ message: 'Failed to issue BOT code' });
   }
 });
 

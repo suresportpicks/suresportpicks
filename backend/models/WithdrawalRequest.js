@@ -63,6 +63,26 @@ const withdrawalRequestSchema = new mongoose.Schema({
     default: 'imf_required'
   },
   // Verification codes
+  imfCode: {
+    userSubmitted: {
+      type: String,
+      trim: true
+    },
+    userSubmittedAt: {
+      type: Date
+    },
+    adminGenerated: {
+      type: String,
+      trim: true
+    },
+    adminIssuedAt: {
+      type: Date
+    },
+    adminIssuedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }
+  },
   vatCode: {
     code: {
       type: String,
@@ -120,6 +140,13 @@ const withdrawalRequestSchema = new mongoose.Schema({
     adminGenerated: {
       type: String,
       trim: true
+    },
+    adminIssuedAt: {
+      type: Date
+    },
+    adminIssuedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
     },
     adminConfirmedAt: {
       type: Date

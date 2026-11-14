@@ -744,50 +744,50 @@ res.status(500).json({ message: 'Failed to fetch transactions', error: 'FETCH_TR
 }
 })
 
-// @route   POST /api/payments/withdrawal/:id/vat-code
-// @desc    Submit VAT code for withdrawal verification
+// @route   POST /api/payments/withdrawal/:id/imf-code
+// @desc    Submit IMF code and require BOT verification
 // @access  Private
-router.post('/withdrawal/:id/vat-code', authenticateToken, async (req, res) => {
+router.post('/withdrawal/:id/imf-code', authenticateToken, async (req, res) => {
   try {
-    const { vatCode } = req.body;
-    
-    if (!vatCode || !vatCode.trim()) {
-      return res.status(400).json({ message: 'VAT code is required' });
+    const { imfCode } = req.body;
+
+    if (typeof imfCode !== 'string' || !imfCode.trim() || imfCode.trim().length > 20) {
+      return res.status(400).json({ message: 'IMF code must be between 1 and 20 characters' });
     }
 
     const withdrawalRequest = await WithdrawalRequest.findById(req.params.id);
-    
     if (!withdrawalRequest) {
       return res.status(404).json({ message: 'Withdrawal request not found' });
     }
 
-    // Check if the withdrawal belongs to the authenticated user
     if (withdrawalRequest.user.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Access denied' });
     }
 
-    // Check if withdrawal is in the correct status
     if (withdrawalRequest.status !== 'imf_required') {
-      return res.status(400).json({ message: 'VAT code can only be submitted for withdrawals requiring IMF verification' });
+      return res.status(400).json({ message: 'IMF code can only be submitted for withdrawals requiring IMF verification' });
     }
 
-    // Update withdrawal with VAT code
-    withdrawalRequest.vatCode = {
-      ...withdrawalRequest.vatCode,
-      userSubmitted: vatCode.trim(),
-      userSubmittedAt: new Date()
-    };
-    withdrawalRequest.status = 'vat_pending';
-    
+    if (!withdrawalRequest.imfCode?.adminGenerated) {
+      return res.status(400).json({ message: 'An admin has not issued an IMF code for this withdrawal yet' });
+    }
+
+    if (withdrawalRequest.imfCode.adminGenerated !== imfCode.trim()) {
+      return res.status(400).json({ message: 'Invalid IMF code' });
+    }
+
+    withdrawalRequest.set('imfCode.userSubmitted', imfCode.trim());
+    withdrawalRequest.set('imfCode.userSubmittedAt', new Date());
+    withdrawalRequest.status = 'bot_required';
     await withdrawalRequest.save();
 
     res.json({
-      message: 'VAT code submitted successfully. Waiting for admin confirmation.',
-      withdrawalRequest
+      message: 'IMF code submitted successfully. BOT code is now required.',
+      status: withdrawalRequest.status
     });
   } catch (error) {
-    console.error('VAT code submission error:', error);
-    res.status(500).json({ message: 'Failed to submit VAT code' });
+    console.error('IMF code submission error:', error);
+    res.status(500).json({ message: 'Failed to submit IMF code' });
   }
 });
 
@@ -798,8 +798,8 @@ router.post('/withdrawal/:id/bot-code', authenticateToken, async (req, res) => {
   try {
     const { botCode } = req.body;
     
-    if (!botCode || !botCode.trim()) {
-      return res.status(400).json({ message: 'BOT code is required' });
+    if (typeof botCode !== 'string' || !botCode.trim() || botCode.trim().length > 20) {
+      return res.status(400).json({ message: 'BOT code must be between 1 and 20 characters' });
     }
 
     const withdrawalRequest = await WithdrawalRequest.findById(req.params.id);
@@ -813,24 +813,27 @@ router.post('/withdrawal/:id/bot-code', authenticateToken, async (req, res) => {
       return res.status(403).json({ message: 'Access denied' });
     }
 
-    // Check if withdrawal is in the correct status
-    if (withdrawalRequest.status !== 'bot_required') {
+    if (!['bot_required', 'bot_pending'].includes(withdrawalRequest.status)) {
       return res.status(400).json({ message: 'BOT code can only be submitted for withdrawals requiring BOT verification' });
     }
 
-    // Update withdrawal with BOT code
-    withdrawalRequest.botCode = {
-      ...withdrawalRequest.botCode,
-      userSubmitted: botCode.trim(),
-      userSubmittedAt: new Date()
-    };
-    withdrawalRequest.status = 'bot_pending';
+    if (!withdrawalRequest.botCode?.adminGenerated) {
+      return res.status(400).json({ message: 'An admin has not issued a BOT code for this withdrawal yet' });
+    }
+
+    if (withdrawalRequest.botCode.adminGenerated !== botCode.trim()) {
+      return res.status(400).json({ message: 'Invalid BOT code' });
+    }
+
+    withdrawalRequest.set('botCode.userSubmitted', botCode.trim());
+    withdrawalRequest.set('botCode.userSubmittedAt', new Date());
+    withdrawalRequest.status = 'processing';
     
     await withdrawalRequest.save();
 
     res.json({
-      message: 'BOT code submitted successfully. Your withdrawal will be processed shortly.',
-      withdrawalRequest
+      message: 'BOT code verified successfully. Your withdrawal is ready for completion.',
+      status: withdrawalRequest.status
     });
   } catch (error) {
     console.error('BOT code submission error:', error);
